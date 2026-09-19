@@ -19,7 +19,7 @@ can contain sub-rooms, and any task can be broken into sub-tasks.
 One flat list of nodes, each pointing at its parent. Not nested JSON.
 
 ```ts
-type Node = {
+type TaskNode = {   // not `Node`: that name is already a DOM global
   id: string
   parentId: string | null        // null = a top-level location
   name: string
@@ -42,7 +42,7 @@ type Node = {
   Manual order applies to locations, to folders (as the tie-break after colour score) and to
   sub-tasks. It does **not** apply to tasks in a room: those always sort by urgency, which is
   the core feature.
-- A **completion log** (`{ nodeId, date }[]`) is kept alongside the nodes. It powers undo now
+- A **completion log** (`{ nodeId, date, batchId }[]`) is kept alongside the nodes. It powers undo now
   and history / "you usually do this every 70 days" later.
 
 ## Dates
@@ -85,9 +85,15 @@ look worse than a room with 3 of 10 overdue.
 
 - Completing a parent task **cascades only to children that are due or due soon**. A yearly
   "regrout" inside a monthly "clean the bathroom" must not be reset by the monthly completion.
-- When every child task of a parent has been completed in the parent's current cycle, the
-  **parent auto-completes**, so it does not stay red after the work was done piecemeal.
-- Every completion shows an undo toast.
+- A parent task **auto-completes** when it wants attention and, after a completion, nothing
+  inside it wants attention any more — so it does not stay red after the work was done
+  piecemeal. Sub-tasks that were not due do not block this (the same "regrout" reason), folders
+  between the parent and the sub-task are stepped over, and the rule repeats up the tree.
+- Every completion shows an undo toast. Undo restores only the nodes that completion touched
+  (found by a shared `batchId` in the completion log), so other edits made meanwhile survive.
+- Turning a task into a folder keeps its `lastCompleted`, so switching it back loses nothing.
+- Duplicating a branch can either keep the last-completed dates or reset the copies to
+  "never done"; the UI should ask when copying into a different room.
 
 ## Navigation
 
@@ -95,7 +101,9 @@ look worse than a room with 3 of 10 overdue.
   Nested accordions lose too much width to indentation by the third level on a phone.
 - Within a screen, tasks are listed above sub-rooms.
 - A **Due** tab is the home screen: a flat list of everything overdue or due soon, with the room
-  path shown. It filters by the active location, or all locations.
+  path shown. It filters by the active location, or all locations. An overdue task hides its
+  own sub-tasks here, exactly as it does in the room count, so a room's badge always equals the
+  number of overdue rows the Due tab shows for it (both come from one function).
 - A location switcher in the header changes the active location.
 
 ## Storage and backup
@@ -112,10 +120,17 @@ look worse than a room with 3 of 10 overdue.
   replacing data. **A texted import link does not work**: an installed PWA has separate storage
   from Safari, and a link opens Safari.
 
+## Code layout
+
+`lib/core` holds all the rules as pure functions with tests: `dates`, `status`, `tree`,
+`summary` (room colour, display order, Due list), `operations` (add / edit / move / duplicate /
+delete), `complete`, `validate`. Import from `@/lib/core` only. Each operation takes the saved
+data and returns a new copy; a refused operation throws a `CoreError` with a `code`.
+
 ## Stack
 
 Next.js (App Router), TypeScript, Tailwind, shadcn, zustand, zod, date-fns, fractional-indexing,
-Vitest, Serwist (PWA). Everything runs client-side.
+Vitest, Serwist (PWA), TanStack Form for the add / edit form. Everything runs client-side.
 
 **Why zustand and not TanStack Query for v1:** Query is a server-state cache (fetch, cache,
 invalidate, retry) and v1 has no server. Wrapping localStorage in queries would add async states
