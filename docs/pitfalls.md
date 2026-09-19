@@ -57,8 +57,24 @@ and reads the contents rather than trusting the type. Feature-detect; never assu
 (desktop browsers mostly lack it, and the button is hidden there).
 
 ### A new page must be added to the service worker
-`/settings` was added to `PAGES` in `sw.js` and `CACHE` was bumped to `sincewhen-v2`. Forgetting
-either means the page fails offline, with no error during development.
+`/settings` had to be added to `PAGES` in `sw.js`. Forgetting means the page fails offline, with
+no error during development.
+
+### A fixed cache name grows forever
+`sw.js` does not change between deploys, so with a constant cache name `install` and `activate`
+never re-ran and every deploy's hashed build files piled up in one cache until quota ran out. The
+cache is now named after the build id passed in the registration URL. Also: `cache.put` rejects
+when storage is full, so every write goes through `tryToCache` — a failed cache write must not
+fail a request whose network fetch succeeded. (Found by CodeRabbit on PR #3.)
+
+### Playwright's `waitForFunction` passes instantly on an async predicate
+The returned Promise is truthy. A cache-upgrade check written that way "passed" while the old
+cache was still there, under a log line claiming it was deleted. Poll from Node instead, and make
+the script throw when the expected state never arrives.
+
+### Do not ask for persistent storage on page load
+Firefox answers `navigator.storage.persist()` with a permission prompt. It is now requested after
+the user adds an item or restores a backup. (Found by CodeRabbit on PR #3.)
 
 ## Dates
 

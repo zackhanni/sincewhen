@@ -8,7 +8,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { isOverdue, listAttentionItems } from "@/lib/core";
 import { useToday } from "@/lib/hooks/use-today";
 import { useTreeIndex } from "@/lib/hooks/use-tree-index";
-import { registerServiceWorker, requestPersistentStorage, updateAppBadge } from "@/lib/pwa/pwa";
+import { registerServiceWorker, updateAppBadge } from "@/lib/pwa/pwa";
 import { cn } from "@/lib/utils";
 import { appStore, useAppStore } from "@/lib/store/use-app-store";
 import { NodeSheet } from "./node-sheet";
@@ -32,7 +32,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     void appStore.persist.rehydrate();
     registerServiceWorker();
-    void requestPersistentStorage();
   }, []);
 
   // Keep the number on the home-screen icon in step with what the Due tab would show for all

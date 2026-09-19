@@ -143,7 +143,8 @@ look worse than a room with 3 of 10 overdue.
 pages and needs three caching rules, which is easier to read and debug than a generated worker.
 On install it caches both pages and every build file their HTML refers to, so the very first
 offline launch works. Pages are network-first (a deploy shows up on next launch), hashed build
-files are cache-first. It registers in production only. `lib/pwa/pwa.ts` holds registration,
+files are cache-first. Each deploy registers the worker under a new URL (`?v=<build id>`) and
+gets its own cache, so old build files are dropped on every update. It registers in production only. `lib/pwa/pwa.ts` holds registration,
 the persistent-storage request, the icon badge and the installed check.
 
 ## Code layout

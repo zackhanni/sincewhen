@@ -8,7 +8,7 @@ import { backupFileName, buildBackupText, readBackupText, summarizeData, type Ba
 import { downloadTextFile, makeShareableFile, shareFile } from "@/lib/backup/send-file";
 import { daysBetween } from "@/lib/core";
 import { useToday } from "@/lib/hooks/use-today";
-import { isInstalled } from "@/lib/pwa/pwa";
+import { isInstalled, requestPersistentStorage } from "@/lib/pwa/pwa";
 import { showError } from "@/lib/show-error";
 import { CORRUPT_BACKUP_KEY } from "@/lib/store/app-store";
 import { appStore, useAppStore } from "@/lib/store/use-app-store";
@@ -93,6 +93,7 @@ export function SettingsScreen() {
       // Storage full or unavailable: the import itself can still go ahead.
     }
     appStore.getState().replaceAllData(pendingImport.data);
+    void requestPersistentStorage();
     setPendingImport(null);
     toast.success("Backup restored");
   };

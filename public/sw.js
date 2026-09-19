@@ -6,8 +6,14 @@
 //
 // This file is plain JavaScript served as-is from /public: it is not bundled or type-checked.
 
-// Bump this when the caching rules below change. Old caches are deleted on activate.
-const CACHE = "sincewhen-v2";
+// One cache per deployment. The page registers this file as `/sw.js?v=<build id>` (see
+// lib/pwa/pwa.ts), so every deploy looks like a new worker to the browser: it installs, fills a
+// fresh cache, and `activate` deletes the old one. Without this, build files from every past
+// deploy would pile up in a single cache for the life of the install, until the browser's quota
+// ran out. The old cache is only deleted after the new one is complete, so an update that fails
+// halfway (say, the network drops) leaves the working version in place.
+const BUILD_ID = new URL(self.location.href).searchParams.get("v") ?? "dev";
+const CACHE = `sincewhen-${BUILD_ID}`;
 
 // Every page of the app. `/rooms` serves every item (`/rooms?id=...`), see lib/routes.ts.
 const PAGES = ["/", "/rooms", "/settings"];
@@ -84,7 +90,7 @@ async function pageFromNetworkThenCache(request, url) {
   const key = PAGES.includes(url.pathname) ? url.pathname : null;
   try {
     const response = await fetch(request);
-    if (response.ok && key) await cache.put(key, response.clone());
+    if (response.ok && key) await tryToCache(cache, key, response.clone());
     return response;
   } catch (error) {
     const cached = key ? await cache.match(key) : await cache.match("/");
@@ -93,12 +99,24 @@ async function pageFromNetworkThenCache(request, url) {
   }
 }
 
+/**
+ * Saving to the cache is a bonus, never a requirement. `cache.put` rejects when storage is full;
+ * letting that escape would fail a request whose network fetch had already succeeded.
+ */
+async function tryToCache(cache, key, response) {
+  try {
+    await cache.put(key, response);
+  } catch (error) {
+    console.warn("Sincewhen could not cache", key, error);
+  }
+}
+
 async function fromCacheThenNetwork(request) {
   const cache = await caches.open(CACHE);
   const cached = await cache.match(request);
   if (cached) return cached;
   const response = await fetch(request);
-  if (response.ok) await cache.put(request, response.clone());
+  if (response.ok) await tryToCache(cache, request, response.clone());
   return response;
 }
 
@@ -106,7 +124,7 @@ async function fromNetworkThenCache(request) {
   const cache = await caches.open(CACHE);
   try {
     const response = await fetch(request);
-    if (response.ok) await cache.put(request, response.clone());
+    if (response.ok) await tryToCache(cache, request, response.clone());
     return response;
   } catch (error) {
     const cached = await cache.match(request);
