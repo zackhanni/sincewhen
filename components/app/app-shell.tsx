@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense, useEffect, type ReactNode } from "react";
-import { FolderTreeIcon, ListChecksIcon } from "lucide-react";
+import { FolderTreeIcon, ListChecksIcon, SettingsIcon } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { isOverdue, listAttentionItems } from "@/lib/core";
 import { useToday } from "@/lib/hooks/use-today";
@@ -17,6 +17,7 @@ import { SheetProvider } from "./sheet-context";
 const TABS = [
   { href: "/", label: "Due", icon: ListChecksIcon, isActive: (path: string) => path === "/" },
   { href: "/rooms", label: "Rooms", icon: FolderTreeIcon, isActive: (path: string) => path.startsWith("/rooms") },
+  { href: "/settings", label: "Settings", icon: SettingsIcon, isActive: (path: string) => path === "/settings" },
 ];
 
 /** The frame around every screen: loads saved data, then shows the page above a bottom tab bar. */

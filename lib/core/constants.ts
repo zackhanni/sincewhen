@@ -29,3 +29,8 @@ export const SEVERE_WEIGHT = 2;
 export const ROOM_ORANGE_MIN_SCORE = 1;
 export const ROOM_RED_MIN_SCORE = 3;
 export const ROOM_DARK_RED_MIN_SCORE = 6;
+
+// --- Backups -----------------------------------------------------------------------------------
+
+/** The Due tab suggests a backup once the last one is this old (or there has never been one). */
+export const BACKUP_NUDGE_DAYS = 30;

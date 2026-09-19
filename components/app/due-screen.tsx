@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { getChildren, isOverdue, listAttentionItems, summarizeNode } from "@/lib/core";
+import {
+  BACKUP_NUDGE_DAYS,
+  daysBetween,
+  getChildren,
+  isOverdue,
+  listAttentionItems,
+  summarizeNode,
+} from "@/lib/core";
 import { useToday } from "@/lib/hooks/use-today";
 import { useTreeIndex } from "@/lib/hooks/use-tree-index";
 import { useAppStore } from "@/lib/store/use-app-store";
@@ -16,7 +23,13 @@ export function DueScreen() {
   const activeLocationId = useAppStore((state) => state.activeLocationId);
   const setActiveLocation = useAppStore((state) => state.setActiveLocation);
 
+  const lastBackupDate = useAppStore((state) => state.lastBackupDate);
+  const taskCount = useAppStore((state) => state.data.nodes.length);
+
   const locations = getChildren(index, null);
+  // Nothing to lose yet means nothing to nag about. After that: never backed up, or too long ago.
+  const backupIsStale =
+    taskCount > 0 && (lastBackupDate === null || daysBetween(lastBackupDate, today) >= BACKUP_NUDGE_DAYS);
   const items = listAttentionItems(index, activeLocationId, today);
   const overdueCount = items.filter((item) => isOverdue(item.timing.status)).length;
 
@@ -33,6 +46,14 @@ export function DueScreen() {
       </header>
 
       <InstallHint />
+
+      {backupIsStale && (
+        <Link href="/settings" className="rounded-lg border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-950">
+          <span className="font-semibold">Time to back up. </span>
+          {lastBackupDate ? `Your last backup was ${daysBetween(lastBackupDate, today)} days ago.` : "You have never backed up."}{" "}
+          <span className="underline">Open Settings</span>
+        </Link>
+      )}
 
       {/* The location filter only earns its space once there is more than one location. */}
       {locations.length > 1 && (

@@ -1,16 +1,16 @@
 // Sincewhen service worker: makes the app open with no network.
 //
-// Hand-written on purpose. The app is three static pages and needs only three rules, which is
+// Hand-written on purpose. The app is a few static pages and needs only three rules, which is
 // easier to read and debug than a generated worker. If the app outgrows this (many routes, push
 // notifications, background sync), switch to Serwist — see docs/pwa.md.
 //
 // This file is plain JavaScript served as-is from /public: it is not bundled or type-checked.
 
 // Bump this when the caching rules below change. Old caches are deleted on activate.
-const CACHE = "sincewhen-v1";
+const CACHE = "sincewhen-v2";
 
 // Every page of the app. `/rooms` serves every item (`/rooms?id=...`), see lib/routes.ts.
-const PAGES = ["/", "/rooms"];
+const PAGES = ["/", "/rooms", "/settings"];
 
 // --- install: download the pages and the files they need, before the worker takes over -------
 self.addEventListener("install", (event) => {
