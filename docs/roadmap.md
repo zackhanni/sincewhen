@@ -52,7 +52,8 @@ Headless Chromium cannot exercise these, so they are built but unproven:
 
 - [ ] Install from Safari, launch from the icon, relaunch in airplane mode.
 - [ ] "Share backup" opens the iOS share sheet and the file arrives in Messages / Files.
-- [ ] "Choose a backup file" can pick that file on a second device and restores it.
+- [x] "Save backup file" then "Choose a backup file" on an iPhone: saves to Files, the picker
+      opens where it was saved, and the restore works (Zack, 2026-09-19). A second device is untested.
 - [ ] The overdue count shows on the home-screen icon.
 
 ## Future additions (not v1)

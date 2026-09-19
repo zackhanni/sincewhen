@@ -90,7 +90,9 @@ look worse than a room with 3 of 10 overdue.
   piecemeal. Sub-tasks that were not due do not block this (the same "regrout" reason), folders
   between the parent and the sub-task are stepped over, and the rule repeats up the tree.
 - Every completion shows an undo toast. Undo restores only the nodes that completion touched
-  (found by a shared `batchId` in the completion log), so other edits made meanwhile survive.
+  (found by a shared `batchId` in the completion log), so other edits made meanwhile survive. A
+  node completed again since is left alone. `batchId` uniqueness is the store's job (it passes a
+  fresh UUID); core does not check it.
 - Turning a task into a folder keeps its `lastCompleted`, so switching it back loses nothing.
 - Duplicating a branch can either keep the last-completed dates or reset the copies to
   "never done"; the UI should ask when copying into a different room.

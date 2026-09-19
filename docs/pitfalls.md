@@ -86,6 +86,19 @@ many locales and scrambles the order. Use `compareSortOrder` from `lib/core`.
 plausible but is invalid (a key may not end in the zero digit) and throws. In tests and seed
 data, generate keys with `generateKeyBetween(previousKey, null)`.
 
+### One invalid node poisons the whole saved file
+`parseAppData` rejects a file if any node fails the schema, so a single bad write (an empty name,
+a frequency of 0, a duplicate id, a malformed sort key) turns every task into "unreadable data"
+on the next launch. `addNode`, `updateNode` and `duplicateSubtree` therefore validate what they
+are about to write and throw `INVALID_DATA`. Any new operation that creates or edits a node must
+do the same. (Found by CodeRabbit on PR #1.)
+
+### Undo must not rewind past a later completion
+If a task is completed twice and the first toast's Undo is pressed, restoring the old date would
+contradict the second completion still in the log. `undoCompletion` only restores a node whose
+newest log entry belongs to the batch being undone. This relies on the log being in time order:
+always append to `completions`, never sort or prepend.
+
 ### The order of the `nodes` array means nothing
 Display order comes from `sortOrder` and from urgency. Operations append to the array and
 `getDescendants` walks depth-first, so array order is arbitrary. Always read children through

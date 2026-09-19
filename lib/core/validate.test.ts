@@ -35,6 +35,11 @@ describe("parseAppData", () => {
     expect(errorOf(makeData([{ ...dueTask("a", null), frequency: { count: 1.5, unit: "week" } }]))).not.toBeNull();
   });
 
+  it("rejects a sort key the ordering library would choke on later", () => {
+    expect(errorOf(makeData([{ ...folder("a", null), sortOrder: "a0000" }]))).toContain("sortOrder");
+    expect(errorOf(makeData([{ ...folder("a", null), sortOrder: "" }]))).toContain("sortOrder");
+  });
+
   it("rejects a backup from a newer version of the app", () => {
     expect(errorOf({ ...createEmptyAppData(), schemaVersion: SCHEMA_VERSION + 1 })).toContain("newer version");
   });

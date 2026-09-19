@@ -93,9 +93,19 @@ export function completeTask(
  * Reverses one completeTask call. Only the nodes that call touched are restored, so any other
  * edit made while the undo toast was on screen survives. A node deleted in the meantime is
  * skipped.
+ *
+ * A node is also left alone if it was completed AGAIN after this batch (the log is in time
+ * order, so that means its newest entry belongs to another batch). Restoring it would rewind
+ * past the later completion while that completion's log entry stayed behind, leaving the node
+ * and its history disagreeing.
  */
 export function undoCompletion(data: AppData, undo: CompletionUndo): AppData {
-  const previousById = new Map(undo.previous.map((entry) => [entry.nodeId, entry.lastCompleted]));
+  const newestBatchOf = new Map(data.completions.map((entry) => [entry.nodeId, entry.batchId]));
+  const previousById = new Map(
+    undo.previous
+      .filter((entry) => newestBatchOf.get(entry.nodeId) === undo.batchId)
+      .map((entry) => [entry.nodeId, entry.lastCompleted]),
+  );
   return {
     ...data,
     nodes: data.nodes.map((node) =>

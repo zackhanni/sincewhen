@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MAX_DEPTH } from "./constants";
+import { MAX_DEPTH, MAX_NAME_LENGTH } from "./constants";
 import { addNode, deleteSubtree, duplicateSubtree, moveNode, updateNode } from "./operations";
 import { TODAY, dueTask, folder, makeData } from "./test-helpers";
 import { buildTreeIndex, getChildren } from "./tree";
@@ -51,6 +51,21 @@ describe("addNode", () => {
     expectCode(() => addNode(atLimit, { ...input, parentId: `level${MAX_DEPTH}` }), "TOO_DEEP");
   });
 
+  it("refuses an id that is already in use", () => {
+    const data = makeData([folder("home", null)]);
+    expectCode(
+      () => addNode(data, { id: "home", parentId: null, name: "Again", frequency: null, lastCompleted: null, today: TODAY }),
+      "INVALID_DATA",
+    );
+  });
+
+  it("refuses a node that would not survive being loaded back", () => {
+    const base = { id: "a", parentId: null, lastCompleted: null, today: TODAY };
+    expectCode(() => addNode(makeData([]), { ...base, name: "   ", frequency: null }), "INVALID_DATA");
+    expectCode(() => addNode(makeData([]), { ...base, name: "x".repeat(MAX_NAME_LENGTH + 1), frequency: null }), "INVALID_DATA");
+    expectCode(() => addNode(makeData([]), { ...base, name: "ok", frequency: { count: 0, unit: "week" } }), "INVALID_DATA");
+  });
+
   it("does not mutate the data it was given", () => {
     const data = makeData([folder("home", null)]);
     addNode(data, { id: "a", parentId: "home", name: "a", frequency: null, lastCompleted: null, today: TODAY });
@@ -67,6 +82,12 @@ describe("updateNode", () => {
   it("treats an undefined field as not provided, rather than erasing it", () => {
     const data = updateNode(makeData([dueTask("a", null)]), "a", { name: "New", lastCompleted: undefined });
     expect(find(data, "a")).toMatchObject({ name: "New", lastCompleted: "2026-05-24" });
+  });
+
+  it("refuses an edit that would not survive being loaded back", () => {
+    const data = makeData([dueTask("a", null)]);
+    expectCode(() => updateNode(data, "a", { name: "" }), "INVALID_DATA");
+    expectCode(() => updateNode(data, "a", { lastCompleted: "2026-02-30" }), "INVALID_DATA");
   });
 
   it("trims an edited name", () => {
@@ -124,6 +145,21 @@ describe("duplicateSubtree", () => {
   it("adds (copy) only when the copy lands beside the original", () => {
     const result = duplicateSubtree(data, "clean", "home", { newId: counterIds(), today: TODAY, resetCompletion: false });
     expect(find(result, "copy1").name).toBe("Clean bathroom (copy)");
+  });
+
+  it("keeps the (copy) suffix even when the name is already at the length limit", () => {
+    const longName = "x".repeat(MAX_NAME_LENGTH);
+    const long = makeData([folder("home", null), { ...folder("room", "home"), name: longName }]);
+    const result = duplicateSubtree(long, "room", "home", { newId: counterIds(), today: TODAY, resetCompletion: false });
+    const copyName = find(result, "copy1").name;
+    expect(copyName).toHaveLength(MAX_NAME_LENGTH);
+    expect(copyName.endsWith(" (copy)")).toBe(true);
+  });
+
+  it("refuses ids from newId that collide with existing nodes or each other", () => {
+    const options = { today: TODAY, resetCompletion: false };
+    expectCode(() => duplicateSubtree(data, "clean", "guest", { ...options, newId: () => "home" }), "INVALID_DATA");
+    expectCode(() => duplicateSubtree(data, "clean", "guest", { ...options, newId: () => "same" }), "INVALID_DATA");
   });
 
   it("can reset the copies to never-done", () => {
