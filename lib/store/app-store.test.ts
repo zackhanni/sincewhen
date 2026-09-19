@@ -114,6 +114,27 @@ describe("app store", () => {
       expect(items.get(CORRUPT_BACKUP_KEY)).toBe(brokenTree);
     });
 
+    it("keeps warning on later launches, until the parked copy is discarded", async () => {
+      const { storage, items } = memoryStorage({ [STORAGE_KEY]: brokenTree });
+      const first = await loadedStore(storage);
+      // Carrying on rewrites the main key with valid data, so the NEXT load has no error...
+      first.getState().addNode({ parentId: null, name: "Home", frequency: null, lastCompleted: null });
+
+      const second = await loadedStore(storage);
+      expect(second.getState().loadError).toBeNull();
+      // ...but the parked copy is still there, and the app must still say so.
+      expect(second.getState().hasUnreadableBackup).toBe(true);
+
+      second.getState().discardUnreadableBackup();
+      expect(second.getState().hasUnreadableBackup).toBe(false);
+      expect(items.has(CORRUPT_BACKUP_KEY)).toBe(false);
+      expect((await loadedStore(storage)).getState().hasUnreadableBackup).toBe(false);
+    });
+
+    it("reports no parked copy on a healthy device", async () => {
+      expect((await loadedStore(memoryStorage().storage)).getState().hasUnreadableBackup).toBe(false);
+    });
+
     it("treats text that is not JSON the same way", async () => {
       const { storage, items } = memoryStorage({ [STORAGE_KEY]: "{not json" });
       const store = await loadedStore(storage);

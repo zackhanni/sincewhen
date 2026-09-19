@@ -120,6 +120,17 @@ If loading fails and the app carries on with the empty default, the next save ov
 user's tasks for good. `merge` in `app-store.ts` parks the raw text under a backup key and sets
 `loadError`. Keep that path, and keep the banner that shows it.
 
+`loadError` alone is not enough: it lasts one session. Once the user adds a task, the next launch
+loads cleanly, the banner would vanish, and the parked copy would be stranded. So the banner also
+follows `hasUnreadableBackup`, which is read from the parked copy itself on every launch (derived,
+not a second saved flag that could disagree). It clears only when the user discards the copy in
+Settings. (Found by CodeRabbit on PR #2.)
+
+### A failed save must be shown, not only logged
+localStorage writes throw in private browsing and when the device is full. Logging to the console
+left the app looking healthy while every change was lost. `use-app-store.ts` shows one persistent
+toast per run of failures. (Found by CodeRabbit on PR #2.)
+
 ### `{ ...node, ...edit }` with an undefined value erases the field
 An optional form field that is present-but-undefined wipes the stored value when spread.
 `updateNode` strips undefined keys; "not provided" means "leave it alone".
@@ -139,6 +150,13 @@ do not cache `todayCalendarDate()` at module level.
 `border-${colour}-500` is never generated. `lib/status-styles.ts` writes every class in full.
 
 ## Tooling
+
+### CodeRabbit silently skips stacked PRs, and its check still says "pass"
+It reviews only PRs whose base is the default branch. PRs #3-#5 reported "Review skipped: reviews
+are disabled for this base branch" and #2 "Review rate limited" — all with a green check and zero
+comments, which looks exactly like a clean review. Read the check's description, not its colour.
+A stacked PR gets reviewed only after the one below merges and it is retargeted; then comment
+`@coderabbitai review`. The plan allows 3 reviews per hour, re-reviews included.
 
 ### A stale server makes a good build look broken
 `pkill -f "next start --port N"` did not match the real process (it runs as `next-server`), so an

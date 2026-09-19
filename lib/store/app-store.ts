@@ -51,6 +51,14 @@ export type AppState = {
   hasHydrated: boolean;
   /** Set when saved data existed but could not be read. The UI must show this, never hide it. */
   loadError: string | null;
+  /**
+   * True while a parked copy of unreadable data is still on the device. `loadError` only lasts
+   * for the session in which loading failed: once the user adds a task, the next launch loads
+   * cleanly and it is null again. This flag is read from the parked copy itself, so the warning
+   * and the way to rescue the data stay visible until the user saves or discards that copy.
+   * (Derived from storage on purpose, not saved as a second flag that could disagree with it.)
+   */
+  hasUnreadableBackup: boolean;
 
   addNode: (form: NewNodeForm) => string;
   updateNode: (id: string, edit: NodeEdit) => void;
@@ -63,6 +71,8 @@ export type AppState = {
   /** Replaces everything with an imported backup that has already passed parseAppData. */
   replaceAllData: (data: AppData) => void;
   markBackedUp: () => void;
+  /** Permanently removes the parked unreadable copy, once the user has saved it or given up on it. */
+  discardUnreadableBackup: () => void;
 };
 
 /** The slice of state that is written to the device. Everything else is rebuilt on load. */
@@ -91,6 +101,7 @@ export function createAppStore(storage: StateStorage) {
         lastBackupDate: null,
         hasHydrated: false,
         loadError: null,
+        hasUnreadableBackup: false,
 
         addNode: (form) => {
           const id = newId();
@@ -122,6 +133,10 @@ export function createAppStore(storage: StateStorage) {
         setActiveLocation: (id) => set({ activeLocationId: id }),
         replaceAllData: (data) => set({ data, activeLocationId: null, loadError: null }),
         markBackedUp: () => set({ lastBackupDate: todayCalendarDate() }),
+        discardUnreadableBackup: () => {
+          storage.removeItem(CORRUPT_BACKUP_KEY);
+          set({ hasUnreadableBackup: false, loadError: null });
+        },
       }),
       {
         name: STORAGE_KEY,
@@ -175,9 +190,12 @@ export function createAppStore(storage: StateStorage) {
         // Runs once loading finishes, whether it worked or not. An `error` here means the saved
         // text was not even valid JSON, so `merge` never ran; it gets the same treatment.
         onRehydrateStorage: () => (_state, error) => {
+          const failure = error ? reportUnreadable("The saved data is not valid JSON.") : {};
           store.setState({
             hasHydrated: true,
-            ...(error ? reportUnreadable("The saved data is not valid JSON.") : {}),
+            ...failure,
+            // Checked after reportUnreadable, so a copy parked a moment ago is counted too.
+            hasUnreadableBackup: typeof storage.getItem(CORRUPT_BACKUP_KEY) === "string",
           });
         },
       },

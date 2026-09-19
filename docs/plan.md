@@ -121,7 +121,9 @@ look worse than a room with 3 of 10 overdue.
   async), which is the seam a Supabase implementation plugs into.
 - Saved data is never trusted: it passes `parseAppData` on load. If it cannot be read, the raw
   text is copied to `sincewhen:unreadable-backup` and the app shows a banner, instead of
-  starting empty and overwriting the user's tasks on the next save.
+  starting empty and overwriting the user's tasks on the next save. The banner stays on later
+  launches for as long as that copy exists; Settings can save it or discard it.
+- A save that fails (private browsing, full device) raises one persistent warning toast.
 - **The app must be an installed PWA.** Safari deletes script-written storage after 7 days
   without a visit; a home-screen PWA is exempt. See [pwa.md](pwa.md).
 - Export is a JSON file, offered both as a download and through the Web Share API
