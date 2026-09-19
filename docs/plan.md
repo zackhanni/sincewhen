@@ -104,13 +104,20 @@ look worse than a room with 3 of 10 overdue.
   path shown. It filters by the active location, or all locations. An overdue task hides its
   own sub-tasks here, exactly as it does in the room count, so a room's badge always equals the
   number of overdue rows the Due tab shows for it (both come from one function).
-- A location switcher in the header changes the active location.
+- Location filter chips on the Due tab choose the active location (or all). They appear only
+  once there are two locations. The Rooms tab always lists every location.
+- Every item has the same screen (`/rooms/[id]`): a room lists its tasks and sub-rooms, a task
+  lists its sub-tasks. Tapping a row opens it; the check circle completes it; the ⋮ button opens
+  the options sheet.
 
 ## Storage and backup
 
 - v1 stores everything on the device through a zustand store with `persist`, a `schemaVersion`
-  and a migration hook. Storage sits behind a small interface so a Supabase implementation can
-  replace it in one file.
+  and a migration hook. `createAppStore(storage)` takes any zustand `StateStorage` (sync or
+  async), which is the seam a Supabase implementation plugs into.
+- Saved data is never trusted: it passes `parseAppData` on load. If it cannot be read, the raw
+  text is copied to `sincewhen:unreadable-backup` and the app shows a banner, instead of
+  starting empty and overwriting the user's tasks on the next save.
 - **The app must be an installed PWA.** Safari deletes script-written storage after 7 days
   without a visit; a home-screen PWA is exempt. See [pwa.md](pwa.md).
 - Export is a JSON file, offered both as a download and through the Web Share API
@@ -126,6 +133,12 @@ look worse than a room with 3 of 10 overdue.
 `summary` (room colour, display order, Due list), `operations` (add / edit / move / duplicate /
 delete), `complete`, `validate`. Import from `@/lib/core` only. Each operation takes the saved
 data and returns a new copy; a refused operation throws a `CoreError` with a `code`.
+
+`lib/store` wraps core in a zustand store (`app-store.ts` is framework-free and tested;
+`use-app-store.ts` binds it to React and localStorage). `components/app` holds the screens:
+`app-shell` (loading, tab bar), `due-screen`, `node-screen`, `node-row`, and one shared bottom
+sheet (`node-sheet` + `sheet-context`) that shows the menu, the add / edit form (`node-form`,
+TanStack Form), the move / duplicate picker or the delete prompt.
 
 ## Stack
 
