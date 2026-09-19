@@ -99,6 +99,8 @@ look worse than a room with 3 of 10 overdue.
 
 - **Drill-in**, not nested accordions: tap a room to open its own screen with a breadcrumb.
   Nested accordions lose too much width to indentation by the third level on a phone.
+- The item id is a query parameter (`/rooms?id=…`, built by `roomHref`), not a path segment, so
+  every route is static and one cached `/rooms` page serves every item offline.
 - Within a screen, tasks are listed above sub-rooms.
 - A **Due** tab is the home screen: a flat list of everything overdue or due soon, with the room
   path shown. It filters by the active location, or all locations. An overdue task hides its
@@ -106,7 +108,7 @@ look worse than a room with 3 of 10 overdue.
   number of overdue rows the Due tab shows for it (both come from one function).
 - Location filter chips on the Due tab choose the active location (or all). They appear only
   once there are two locations. The Rooms tab always lists every location.
-- Every item has the same screen (`/rooms/[id]`): a room lists its tasks and sub-rooms, a task
+- Every item has the same screen (`/rooms?id=…`): a room lists its tasks and sub-rooms, a task
   lists its sub-tasks. Tapping a row opens it; the check circle completes it; the ⋮ button opens
   the options sheet.
 
@@ -127,6 +129,15 @@ look worse than a room with 3 of 10 overdue.
   replacing data. **A texted import link does not work**: an installed PWA has separate storage
   from Safari, and a link opens Safari.
 
+## Offline
+
+`public/sw.js` is a small hand-written service worker rather than Serwist: the app is two static
+pages and needs three caching rules, which is easier to read and debug than a generated worker.
+On install it caches both pages and every build file their HTML refers to, so the very first
+offline launch works. Pages are network-first (a deploy shows up on next launch), hashed build
+files are cache-first. It registers in production only. `lib/pwa/pwa.ts` holds registration,
+the persistent-storage request, the icon badge and the installed check.
+
 ## Code layout
 
 `lib/core` holds all the rules as pure functions with tests: `dates`, `status`, `tree`,
@@ -143,7 +154,7 @@ TanStack Form), the move / duplicate picker or the delete prompt.
 ## Stack
 
 Next.js (App Router), TypeScript, Tailwind, shadcn, zustand, zod, date-fns, fractional-indexing,
-Vitest, Serwist (PWA), TanStack Form for the add / edit form. Everything runs client-side.
+Vitest, TanStack Form for the add / edit form. Everything runs client-side.
 
 **Why zustand and not TanStack Query for v1:** Query is a server-state cache (fetch, cache,
 invalidate, retry) and v1 has no server. Wrapping localStorage in queries would add async states

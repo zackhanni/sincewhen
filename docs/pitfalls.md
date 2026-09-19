@@ -20,6 +20,31 @@ happen inside the app with a file picker.
 Use the Web Share API (`navigator.share({ files })`) to open the share sheet instead. Check
 `navigator.canShare({ files })` first and fall back to a plain download.
 
+### A dynamic route cannot be cached as one offline page
+`/rooms/[id]` renders per id on the server, so there is no single page to cache, and a copy
+cached for one id may carry that id in its embedded route data (not tested; avoided instead). The id is a query parameter instead (`/rooms?id=…`), which
+keeps the route static. Build links with `roomHref`, never by hand.
+
+### The first offline launch has HTML but no JavaScript, unless install caches it
+The page's scripts download before the service worker exists, so the worker never sees them.
+`sw.js` reads each page's HTML on install and caches the `/_next/static/` files it names.
+Tested by visiting only `/`, going offline, and opening `/rooms` for the first time.
+
+### An offline test needs a control
+Playwright's `setOffline` was checked with service workers blocked, where the load must fail. A
+page that "works offline" may just be the browser's own HTTP cache.
+
+### The service worker must not run in development
+It would serve cached pages and hide the code you just changed. Registration is production-only.
+
+### `useSearchParams` needs a Suspense boundary
+Without one the production build fails, because the page can no longer be prerendered. Both
+`app/rooms/page.tsx` and the `NodeSheet` in `app-shell.tsx` are wrapped.
+
+### Stale `.next/types` after deleting a route
+`tsc` reported a missing `app/rooms/[id]/page.js` after the folder was deleted. `pnpm build`
+(or `pnpm dev`) regenerates the types; the error is not in the source.
+
 ## Dates
 
 ### A month is not a day count

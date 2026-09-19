@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { CopyIcon, FolderInputIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { getDescendants, listPlacementTargets, type TaskNode, type TreeIndex } from "@/lib/core";
 import { useTreeIndex } from "@/lib/hooks/use-tree-index";
+import { roomHref } from "@/lib/routes";
 import { showError } from "@/lib/show-error";
 import { appStore } from "@/lib/store/use-app-store";
 import { cn } from "@/lib/utils";
@@ -201,7 +202,7 @@ function PlacementBody({ node, index, action }: { node: TaskNode; index: TreeInd
 function DeleteBody({ node, index }: { node: TaskNode; index: TreeIndex }) {
   const { closeSheet } = useSheet();
   const router = useRouter();
-  const pathname = usePathname();
+  const viewedId = useSearchParams().get("id");
   const insideCount = getDescendants(index, node.id).length;
 
   const confirmDelete = () => {
@@ -210,9 +211,7 @@ function DeleteBody({ node, index }: { node: TaskNode; index: TreeIndex }) {
       toast.success(`Deleted ${node.name}`);
       closeSheet();
       // If we are looking at the item that was just deleted, step out to where it lived.
-      if (pathname === `/rooms/${node.id}`) {
-        router.replace(node.parentId ? `/rooms/${node.parentId}` : "/rooms");
-      }
+      if (viewedId === node.id) router.replace(roomHref(node.parentId));
     } catch (error) {
       showError(error);
     }

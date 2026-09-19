@@ -6,6 +6,7 @@ import { isOverdue, type ChildView, type TaskNode } from "@/lib/core";
 import { formatDue, formatFrequency } from "@/lib/format";
 import { useCompleteTask } from "@/lib/hooks/use-complete-task";
 import { ROOM_BADGE, ROOM_BORDER, TASK_BAR, TASK_DUE_TEXT } from "@/lib/status-styles";
+import { roomHref } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { useSheet } from "./sheet-context";
 
@@ -65,7 +66,7 @@ function TaskRow({ view, hasChildren, location }: NodeRowProps) {
         </span>
       </button>
 
-      <Link href={`/rooms/${node.id}`} className="flex min-w-0 flex-1 items-center gap-2 py-2">
+      <Link href={roomHref(node.id)} className="flex min-w-0 flex-1 items-center gap-2 py-2">
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-1.5">
             {isSevere && <CircleAlertIcon aria-label="Long overdue" className="size-4 shrink-0 text-red-600" />}
@@ -96,7 +97,7 @@ function FolderRow({ view }: { view: ChildView }) {
   const { node, summary } = view;
   return (
     <li className={cn("flex items-center rounded-lg border-2 bg-card", ROOM_BORDER[summary.level])}>
-      <Link href={`/rooms/${node.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-3 pl-3">
+      <Link href={roomHref(node.id)} className="flex min-w-0 flex-1 items-center gap-3 py-3 pl-3">
         <FolderIcon className="size-5 shrink-0 text-muted-foreground" />
         <span className="min-w-0 flex-1 truncate font-medium">{node.name}</span>
         {summary.overdueCount > 0 && (

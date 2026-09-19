@@ -35,9 +35,9 @@ next phase may branch from an unmerged phase, but never further than that.
 
 ## Phase 4 — PWA
 
-- [ ] Manifest, icons, Serwist service worker, offline
-- [ ] `navigator.storage.persist()` and an install hint
-- [ ] App icon badge with the overdue count (updates when the app opens)
+- [x] Manifest, icons, hand-written service worker (`public/sw.js`), offline
+- [x] `navigator.storage.persist()` and an install hint
+- [x] App icon badge with the overdue count (updates when the app opens)
 
 ## Phase 5 — Settings and backup
 
@@ -54,6 +54,10 @@ next phase may branch from an unmerged phase, but never further than that.
   only works for an installed PWA.
 - **GPS location switching.** Store coordinates on a location and switch the active location
   when the device is near it. Needs a permission prompt and a manual override.
+- **A designed app icon.** The current one is a placeholder drawn in `app/icon.svg`; the PNGs in
+  `public/icons` and `app/apple-icon.png` were rendered from it and must be re-rendered together.
+- **An "update available" prompt.** A new deploy is picked up on the next launch; there is no
+  in-app notice yet.
 - **Dark mode.** The theme has dark tokens, but the status colours in `lib/status-styles.ts`
   are light-only and nothing sets the `.dark` class yet.
 - **Automated browser tests.** Phase 3 was checked with a throwaway Playwright script; a

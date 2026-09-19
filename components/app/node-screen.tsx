@@ -17,6 +17,7 @@ import { formatDue, formatFrequency } from "@/lib/format";
 import { useCompleteTask } from "@/lib/hooks/use-complete-task";
 import { useToday } from "@/lib/hooks/use-today";
 import { useTreeIndex } from "@/lib/hooks/use-tree-index";
+import { roomHref } from "@/lib/routes";
 import { TASK_DUE_TEXT } from "@/lib/status-styles";
 import { NodeRow } from "./node-row";
 import { useSheet } from "./sheet-context";
@@ -63,7 +64,7 @@ export function NodeScreen({ id }: { id: string | null }) {
                   {step.id === id ? (
                     <BreadcrumbPage>{step.name}</BreadcrumbPage>
                   ) : (
-                    <BreadcrumbLink render={<Link href={`/rooms/${step.id}`} />}>{step.name}</BreadcrumbLink>
+                    <BreadcrumbLink render={<Link href={roomHref(step.id)} />}>{step.name}</BreadcrumbLink>
                   )}
                 </BreadcrumbItem>
               </Fragment>

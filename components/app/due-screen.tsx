@@ -6,6 +6,7 @@ import { useToday } from "@/lib/hooks/use-today";
 import { useTreeIndex } from "@/lib/hooks/use-tree-index";
 import { useAppStore } from "@/lib/store/use-app-store";
 import { cn } from "@/lib/utils";
+import { InstallHint } from "./install-hint";
 import { NodeRow } from "./node-row";
 
 /** The home screen: everything overdue or due soon, most urgent first, across all rooms. */
@@ -30,6 +31,8 @@ export function DueScreen() {
           {items.length > overdueCount && ` · ${items.length - overdueCount} coming up`}
         </p>
       </header>
+
+      <InstallHint />
 
       {/* The location filter only earns its space once there is more than one location. */}
       {locations.length > 1 && (
