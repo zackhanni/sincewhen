@@ -16,6 +16,8 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Sincewhen",
   description: "Recurring tasks that come due based on when you last did them.",
+  // Makes iOS open the installed app full-screen, with the name shown under its icon.
+  appleWebApp: { capable: true, title: "Sincewhen", statusBarStyle: "default" },
 };
 
 // `viewportFit: "cover"` lets the page run under the iPhone home indicator, which is what makes

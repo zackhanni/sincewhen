@@ -2,9 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, type ReactNode } from "react";
+import { Suspense, useEffect, type ReactNode } from "react";
 import { FolderTreeIcon, ListChecksIcon } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
+import { isOverdue, listAttentionItems } from "@/lib/core";
+import { useToday } from "@/lib/hooks/use-today";
+import { useTreeIndex } from "@/lib/hooks/use-tree-index";
+import { registerServiceWorker, requestPersistentStorage, updateAppBadge } from "@/lib/pwa/pwa";
 import { cn } from "@/lib/utils";
 import { appStore, useAppStore } from "@/lib/store/use-app-store";
 import { NodeSheet } from "./node-sheet";
@@ -25,7 +29,19 @@ export function AppShell({ children }: { children: ReactNode }) {
   // to read from. See `skipHydration` in app-store.ts.
   useEffect(() => {
     void appStore.persist.rehydrate();
+    registerServiceWorker();
+    void requestPersistentStorage();
   }, []);
+
+  // Keep the number on the home-screen icon in step with what the Due tab would show for all
+  // locations. `today` is included so the count rolls over when a new day starts.
+  const index = useTreeIndex();
+  const today = useToday();
+  useEffect(() => {
+    if (!hasHydrated) return;
+    const overdue = listAttentionItems(index, null, today).filter((item) => isOverdue(item.timing.status));
+    updateAppBadge(overdue.length);
+  }, [hasHydrated, index, today]);
 
   return (
     <SheetProvider>
@@ -63,7 +79,10 @@ export function AppShell({ children }: { children: ReactNode }) {
         </nav>
       </div>
 
-      <NodeSheet />
+      {/* The sheet reads the URL's query string, which needs a Suspense boundary (see rooms/page). */}
+      <Suspense>
+        <NodeSheet />
+      </Suspense>
       {/* Above the tab bar, so the Undo button is never hidden behind it. */}
       <Toaster position="top-center" />
     </SheetProvider>

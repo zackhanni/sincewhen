@@ -1,8 +1,8 @@
 # Sincewhen — installing as a PWA
 
 Installing matters here, not just for convenience: Safari deletes a site's local data after 7
-days without a visit, and an installed app is exempt. Until Phase 4 ships the manifest and
-service worker, "Add to Home Screen" only creates a bookmark.
+days without a visit, and an installed app is exempt. The app shows a one-time hint about this
+when it is opened in a browser tab.
 
 ## Install
 
@@ -21,17 +21,36 @@ because the installed app has its own storage. Export first if you already have 
 - Settings shows storage as persistent (`navigator.storage.persisted()` returns true). iOS may
   not report this reliably; the backup nudge is the real safety net.
 
-## What is built in Phase 4
+## How it is built
 
-- `app/manifest.ts` — name, icons, `display: "standalone"`, theme colours.
-- Icons: 192 and 512 PNG, a maskable variant, and an `apple-touch-icon`.
-- A Serwist service worker that precaches the app shell so it opens offline.
-- A call to `navigator.storage.persist()` on first run.
-- The Badging API (`navigator.setAppBadge`) to show the overdue count on the icon. It only
-  updates while the app is open; a true background update needs push.
+- `app/manifest.ts` — name, icons, `display: "standalone"`. Served at `/manifest.webmanifest`.
+- Icons — `app/icon.svg` (browser tab), `app/apple-icon.png` (iOS home screen, 180px, square:
+  iOS rounds it), `public/icons/icon-192.png`, `icon-512.png` and `icon-maskable-512.png`
+  (artwork shrunk to the middle 72% so Android can crop it to any shape).
+- `public/sw.js` — the service worker. Read its comments first; the rules are in plan.md.
+- `next.config.ts` — serves `sw.js` with `no-store`, so a fixed worker reaches phones at once.
+- `lib/pwa/pwa.ts` — registers the worker (production only), calls
+  `navigator.storage.persist()`, and sets the icon badge to the overdue count. The badge only
+  updates while the app is open; a background update needs push.
+- `components/app/install-hint.tsx` — the install nudge.
+
+## Testing it
+
+The worker does not run under `pnpm dev`. Use `pnpm build && pnpm start`, open the site, then in
+Chrome DevTools: Application > Service workers to see it, and Network > Offline to test.
+`localhost` counts as secure, so no HTTPS is needed locally. To start clean, use Application >
+Storage > Clear site data (this also deletes your tasks on that origin).
+
+## Changing the worker
+
+Bump `CACHE` in `sw.js` whenever the caching rules change; old caches are deleted on activate.
+Adding a page to the app means adding it to `PAGES`, or it will not open offline.
 
 ## Alternatives, if a PWA stops being enough
 
+- **Serwist** (`@serwist/turbopack`) generates the worker and a precise precache list from the
+  build. Worth it once there are many routes, or when adding push or background sync. It
+  replaces `public/sw.js`; everything else here stays.
 - **Capacitor** wraps this same Next.js app (as a static export) in a native shell. It gives
   real local notifications without a server, native file storage that the OS will not evict,
   and App Store distribution. It is the smallest step up from a PWA.
