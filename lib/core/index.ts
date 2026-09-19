@@ -10,3 +10,4 @@ export * from "./summary";
 export * from "./tree";
 export * from "./types";
 export * from "./validate";
+export * from "./placement";

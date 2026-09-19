@@ -72,7 +72,12 @@ export type NodeEdit = Partial<Pick<TaskNode, "name" | "frequency" | "lastComple
 
 export function updateNode(data: AppData, id: string, edit: NodeEdit): AppData {
   requireNode(buildTreeIndex(data.nodes), id);
-  const cleanEdit = edit.name === undefined ? edit : { ...edit, name: edit.name.trim() };
+  // Drop keys that are present but undefined. Spreading `{ lastCompleted: undefined }` over a
+  // node would silently erase the stored date; "not provided" must mean "leave it alone".
+  const provided = Object.fromEntries(
+    Object.entries(edit).filter(([, value]) => value !== undefined),
+  ) as NodeEdit;
+  const cleanEdit = provided.name === undefined ? provided : { ...provided, name: provided.name.trim() };
   return {
     ...data,
     nodes: data.nodes.map((node) => (node.id === id ? { ...node, ...cleanEdit } : node)),

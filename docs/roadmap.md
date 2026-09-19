@@ -7,7 +7,7 @@ next phase may branch from an unmerged phase, but never further than that.
 
 - [x] Next.js + TypeScript + Tailwind + shadcn + Vitest
 - [x] Docs: plan, roadmap, pitfalls, pwa, AGENTS.md
-- [ ] Deploy the empty shell to Vercel and open it on the phone
+- [x] Deploy the empty shell to Vercel and open it on the phone
 
 ## Phase 1 — Core logic (test-first, no UI)
 
@@ -20,18 +20,18 @@ next phase may branch from an unmerged phase, but never further than that.
 
 ## Phase 2 — Store
 
-- [ ] zustand store with persist, `schemaVersion`, migration hook
-- [ ] Storage interface in front of the localStorage implementation
+- [x] zustand store with persist, `schemaVersion`, migration hook
+- [x] Storage behind zustand's `StateStorage`, so another backend can replace localStorage
 
 ## Phase 3 — UI
 
-- [ ] Rooms view: drill-in, breadcrumb, coloured cards, badges
-- [ ] Location switcher
-- [ ] Task row: colour, due text, one-tap complete, severe "!" mark
-- [ ] Item menu (drawer): edit, frequency, move, duplicate, add sub-task, delete with confirm
-- [ ] Add / edit form (TanStack Form) with frequency picker and "last done"
-- [ ] Due tab
-- [ ] Empty states and undo toast
+- [x] Rooms view: drill-in, breadcrumb, coloured cards, badges
+- [x] Location filter (chips on the Due tab; shown once there are two locations)
+- [x] Task row: colour, due text, one-tap complete, severe "!" mark
+- [x] Item menu (drawer): edit, frequency, move, duplicate, add sub-task, delete with confirm
+- [x] Add / edit form (TanStack Form) with frequency picker and "last done"
+- [x] Due tab
+- [x] Empty states and undo toast
 
 ## Phase 4 — PWA
 
@@ -54,6 +54,10 @@ next phase may branch from an unmerged phase, but never further than that.
   only works for an installed PWA.
 - **GPS location switching.** Store coordinates on a location and switch the active location
   when the device is near it. Needs a permission prompt and a manual override.
+- **Dark mode.** The theme has dark tokens, but the status colours in `lib/status-styles.ts`
+  are light-only and nothing sets the `.dark` class yet.
+- **Automated browser tests.** Phase 3 was checked with a throwaway Playwright script; a
+  committed e2e suite would make that repeatable.
 - **Drag to reorder.** The `sortOrder` field is already a fractional-indexing key; only the drag
   UI is missing.
 - **Snooze** a task without completing it.

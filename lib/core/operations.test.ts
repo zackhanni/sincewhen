@@ -64,6 +64,11 @@ describe("updateNode", () => {
     expect(find(data, "a")).toMatchObject({ frequency: null, lastCompleted: "2026-05-24" });
   });
 
+  it("treats an undefined field as not provided, rather than erasing it", () => {
+    const data = updateNode(makeData([dueTask("a", null)]), "a", { name: "New", lastCompleted: undefined });
+    expect(find(data, "a")).toMatchObject({ name: "New", lastCompleted: "2026-05-24" });
+  });
+
   it("trims an edited name", () => {
     expect(find(updateNode(makeData([folder("a", null)]), "a", { name: " Attic " }), "a").name).toBe("Attic");
   });

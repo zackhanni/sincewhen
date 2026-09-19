@@ -55,7 +55,48 @@ Display order comes from `sortOrder` and from urgency. Operations append to the 
 A daily task is always "due within 1 day". Without the `progress > 0` guard in `status.ts` it
 turns yellow the instant it is checked off.
 
+## State and UI
+
+### Render nothing until the store has loaded
+The store starts with empty data and loads from the device in an effect (`skipHydration`),
+because the server has no device storage and the first client render must match it. Anything
+rendered before `hasHydrated` is true sees zero tasks. `AppShell` gates the page on it.
+
+### Unreadable saved data must not look like "no data"
+If loading fails and the app carries on with the empty default, the next save overwrites the
+user's tasks for good. `merge` in `app-store.ts` parks the raw text under a backup key and sets
+`loadError`. Keep that path, and keep the banner that shows it.
+
+### `{ ...node, ...edit }` with an undefined value erases the field
+An optional form field that is present-but-undefined wipes the stored value when spread.
+`updateNode` strips undefined keys; "not provided" means "leave it alone".
+
+### A hidden form control still validates, and still submits
+Do not rely on a hidden field's validator being skipped: the value stays in form state after the
+control unmounts, so a bad value in a hidden "count" field could block saving a folder. (Not
+proven either way against TanStack Form; guarded regardless.) The validators in `node-form.tsx`
+check whether the field currently applies. Likewise the form omits `lastCompleted` for a folder rather than
+sending null, so turning a task into a folder cannot wipe its history.
+
+### "Today" goes stale in an app that is never reloaded
+A phone app is resumed, not reloaded. `useToday` re-reads the date on focus / visibility change;
+do not cache `todayCalendarDate()` at module level.
+
+### Tailwind cannot see class names built from pieces
+`border-${colour}-500` is never generated. `lib/status-styles.ts` writes every class in full.
+
 ## Tooling
+
+### `shadcn init` wrote a self-referencing font variable
+It set `--font-sans: var(--font-sans)` in `globals.css`, which resolves to nothing, so the whole
+app silently fell back to a serif font. It must point at the variable `next/font` defines:
+`--font-sans: var(--font-geist-sans)`. Only a screenshot revealed it — typecheck, lint and tests
+were all green.
+
+### Remove shadcn components you do not use
+`shadcn add` is cheap, so unused files pile up. Six were added and deleted in Phase 3. Native
+`<select>` and `<input type="date">` are used on purpose: on a phone they open the system
+pickers, which beat any custom dropdown.
 
 ### Vitest config must be `vitest.config.mts`
 `package.json` has no `"type": "module"`, so a `.ts` config is loaded as CommonJS and Vite warns

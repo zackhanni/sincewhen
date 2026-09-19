@@ -1,10 +1,5 @@
-export default function Home() {
-  return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-center">
-      <h1 className="text-2xl font-semibold tracking-tight">Sincewhen</h1>
-      <p className="text-muted-foreground text-sm">
-        Recurring tasks, due based on when you last did them.
-      </p>
-    </main>
-  );
+import { DueScreen } from "@/components/app/due-screen";
+
+export default function DuePage() {
+  return <DueScreen />;
 }
