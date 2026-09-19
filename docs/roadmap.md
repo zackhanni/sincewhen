@@ -11,12 +11,12 @@ next phase may branch from an unmerged phase, but never further than that.
 
 ## Phase 1 — Core logic (test-first, no UI)
 
-- [ ] Node types and zod schemas
-- [ ] `dueDate`, `progress`, `status` — edge cases: Jan 31 + 1 month, leap day, never completed
-- [ ] Room score with the rollup rules (descendants, severe = 2, overdue parent counts once)
-- [ ] Sort comparator: tasks by progress, then folders by score, `sortOrder` as tie-break
-- [ ] Tree operations: add, move (depth + cycle guards), duplicate subtree, delete subtree
-- [ ] Complete, cascade to due children, auto-complete parent, undo
+- [x] Node types and zod schemas
+- [x] `dueDate`, `progress`, `status` — edge cases: Jan 31 + 1 month, leap day, never completed
+- [x] Room score with the rollup rules (descendants, severe = 2, overdue parent counts once)
+- [x] Sort comparator: tasks by progress, then folders by score, `sortOrder` as tie-break
+- [x] Tree operations: add, move (depth + cycle guards), duplicate subtree, delete subtree
+- [x] Complete, cascade to due children, auto-complete parent, undo
 
 ## Phase 2 — Store
 
@@ -29,7 +29,7 @@ next phase may branch from an unmerged phase, but never further than that.
 - [ ] Location switcher
 - [ ] Task row: colour, due text, one-tap complete, severe "!" mark
 - [ ] Item menu (drawer): edit, frequency, move, duplicate, add sub-task, delete with confirm
-- [ ] Add / edit form with frequency picker and "last done"
+- [ ] Add / edit form (TanStack Form) with frequency picker and "last done"
 - [ ] Due tab
 - [ ] Empty states and undo toast
 
