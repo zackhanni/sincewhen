@@ -100,6 +100,16 @@ describe("getChildViews — display order", () => {
     expect(order).toEqual(["step1", "step2"]);
   });
 
+  it("keeps a folder step in its manual place inside a task, not pushed below the tasks", () => {
+    const nodes = [
+      makeNode("clean", null, { frequency: WEEKLY, lastCompleted: TODAY }),
+      folder("prep", "clean"),
+      severeTask("scrub", "clean"),
+    ];
+    const order = getChildViews(buildTreeIndex(nodes), "clean", TODAY).map((v) => v.node.id);
+    expect(order).toEqual(["prep", "scrub"]);
+  });
+
   it("keeps locations in manual order, whatever their state", () => {
     const nodes = [folder("home", null), folder("work", null), severeTask("x", "work")];
     const order = getChildViews(buildTreeIndex(nodes), null, TODAY).map((v) => v.node.id);

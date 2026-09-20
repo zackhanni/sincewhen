@@ -141,15 +141,18 @@ export function getChildViews(
   // getChildren already returns manual order, which is what locations use.
   if (parentId === null) return views;
 
+
+  // Inside a task everything is a step, folders included, so manual order applies to the whole
+  // list — not just to the tasks with the folders pushed underneath.
   const parentIsTask = index.byId.get(parentId)?.frequency != null;
+  if (parentIsTask) return views;
+
   const tasks = views.filter((view) => view.timing !== null);
   const folders = views.filter((view) => view.timing === null);
 
-  if (!parentIsTask) {
-    tasks.sort(
-      (a, b) => b.timing!.progress - a.timing!.progress || compareSortOrder(a.node, b.node),
-    );
-  }
+  tasks.sort(
+    (a, b) => b.timing!.progress - a.timing!.progress || compareSortOrder(a.node, b.node),
+  );
   folders.sort(
     (a, b) =>
       b.summary.score - a.summary.score ||

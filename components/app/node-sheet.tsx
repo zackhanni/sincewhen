@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { getDescendants, listPlacementTargets, type TaskNode, type TreeIndex } from "@/lib/core";
 import { useTreeIndex } from "@/lib/hooks/use-tree-index";
+import { requestPersistentStorage } from "@/lib/pwa/pwa";
 import { roomHref } from "@/lib/routes";
 import { showError } from "@/lib/show-error";
 import { appStore } from "@/lib/store/use-app-store";
@@ -57,6 +58,9 @@ function SheetBody({ sheet, index }: { sheet: SheetState; index: TreeIndex }) {
           frequency: result.frequency,
           lastCompleted: result.lastCompleted ?? null,
         });
+        // There is now something worth protecting, and this is a user action, which is when
+        // browsers expect to be asked. It does nothing if storage is already persistent.
+        void requestPersistentStorage();
         closeSheet();
       } catch (error) {
         showError(error);

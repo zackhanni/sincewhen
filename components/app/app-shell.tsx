@@ -8,7 +8,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { isOverdue, listAttentionItems } from "@/lib/core";
 import { useToday } from "@/lib/hooks/use-today";
 import { useTreeIndex } from "@/lib/hooks/use-tree-index";
-import { registerServiceWorker, requestPersistentStorage, updateAppBadge } from "@/lib/pwa/pwa";
+import { registerServiceWorker, updateAppBadge } from "@/lib/pwa/pwa";
 import { cn } from "@/lib/utils";
 import { appStore, useAppStore } from "@/lib/store/use-app-store";
 import { NodeSheet } from "./node-sheet";
@@ -25,13 +25,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const hasHydrated = useAppStore((state) => state.hasHydrated);
   const loadError = useAppStore((state) => state.loadError);
+  const hasUnreadableBackup = useAppStore((state) => state.hasUnreadableBackup);
 
   // Saved data is read here, after the first render, because the server has no device storage
   // to read from. See `skipHydration` in app-store.ts.
   useEffect(() => {
     void appStore.persist.rehydrate();
     registerServiceWorker();
-    void requestPersistentStorage();
   }, []);
 
   // Keep the number on the home-screen icon in step with what the Due tab would show for all
@@ -46,14 +46,17 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <SheetProvider>
-      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
-        {loadError && (
-          <div role="alert" className="border-b border-red-300 bg-red-50 p-3 text-sm text-red-900">
-            <p className="font-semibold">Your saved data could not be read.</p>
+      {/* `viewportFit: "cover"` lets the page run under the status bar and notch, so the top needs
+          the same safe-area padding the tab bar has at the bottom. It is 0 where not needed. */}
+      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col pt-[env(safe-area-inset-top)]">
+        {(loadError || hasUnreadableBackup) && (
+          <Link href="/settings" role="alert" className="block border-b border-red-300 bg-red-50 p-3 text-sm text-red-900">
+            <p className="font-semibold">Some saved data could not be read.</p>
             <p>
-              Nothing was deleted: the original was kept on this device as a backup. Reason: {loadError}
+              Nothing was deleted: the original was kept on this device.
+              {loadError && ` Reason: ${loadError}`} <span className="underline">Open Settings to save it.</span>
             </p>
-          </div>
+          </Link>
         )}
 
         {/* Until saved data has loaded, `data` is the empty default. Showing a page now would

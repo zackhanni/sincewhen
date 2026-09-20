@@ -98,6 +98,16 @@ describe("undoCompletion", () => {
     expect(lastCompleted(restored, "never")).toBeNull();
   });
 
+  it("leaves a node alone if it was completed again after this batch", () => {
+    const first = completeTask(makeData([dueTask("a", null)]), "a", "2026-06-01", "b1");
+    const second = completeTask(first.data, "a", "2026-06-03", "b2");
+
+    const result = undoCompletion(second.data, first.undo);
+    // Rewinding to the pre-b1 date would contradict the b2 entry still in the log.
+    expect(lastCompleted(result, "a")).toBe("2026-06-03");
+    expect(result.completions).toEqual([{ nodeId: "a", date: "2026-06-03", batchId: "b2" }]);
+  });
+
   it("keeps edits made while the undo toast was showing", () => {
     const { data: after, undo } = completeTask(makeData([dueTask("a", null), dueTask("b", null)]), "a", TODAY, "b1");
     const edited = { ...after, nodes: after.nodes.map((n) => (n.id === "b" ? { ...n, name: "renamed" } : n)) };

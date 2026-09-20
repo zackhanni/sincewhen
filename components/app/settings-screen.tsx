@@ -8,7 +8,7 @@ import { backupFileName, buildBackupText, readBackupText, summarizeData, type Ba
 import { downloadTextFile, makeShareableFile, shareFile } from "@/lib/backup/send-file";
 import { daysBetween } from "@/lib/core";
 import { useToday } from "@/lib/hooks/use-today";
-import { isInstalled } from "@/lib/pwa/pwa";
+import { isInstalled, requestPersistentStorage } from "@/lib/pwa/pwa";
 import { showError } from "@/lib/show-error";
 import { CORRUPT_BACKUP_KEY } from "@/lib/store/app-store";
 import { appStore, useAppStore } from "@/lib/store/use-app-store";
@@ -39,7 +39,8 @@ export function SettingsScreen() {
   const today = useToday();
   const data = useAppStore((state) => state.data);
   const lastBackupDate = useAppStore((state) => state.lastBackupDate);
-  const loadError = useAppStore((state) => state.loadError);
+  const hasUnreadableBackup = useAppStore((state) => state.hasUnreadableBackup);
+  const [confirmingDiscard, setConfirmingDiscard] = useState(false);
   const [pendingImport, setPendingImport] = useState<Extract<BackupReadResult, { ok: true }> | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -50,7 +51,6 @@ export function SettingsScreen() {
     () => makeShareableFile("probe.json", "{}") !== null,
     () => false,
   );
-  const unreadableBackup = useSyncExternalStore(subscribeToNothing, () => readStorage(CORRUPT_BACKUP_KEY), () => null);
 
   const current = summarizeData(data);
   const fileName = backupFileName(today);
@@ -93,6 +93,7 @@ export function SettingsScreen() {
       // Storage full or unavailable: the import itself can still go ahead.
     }
     appStore.getState().replaceAllData(pendingImport.data);
+    void requestPersistentStorage();
     setPendingImport(null);
     toast.success("Backup restored");
   };
@@ -167,21 +168,40 @@ export function SettingsScreen() {
         )}
       </Section>
 
-      {(loadError || unreadableBackup) && (
+      {hasUnreadableBackup && (
         <Section title="Unreadable data">
           <p className="text-sm text-muted-foreground">
             Saved data on this device could not be read at some point, and the original was kept. Save it
-            before clearing anything; it may be repairable.
+            somewhere safe first; it may be repairable. The warning at the top stays until you discard it.
           </p>
           <Button
             size="lg"
             variant="outline"
-            disabled={!unreadableBackup}
-            onClick={() => unreadableBackup && downloadTextFile("sincewhen-unreadable-data.json", unreadableBackup)}
+            onClick={() => {
+              // Read at the moment of the tap, so the file is whatever is parked right now.
+              const parked = readStorage(CORRUPT_BACKUP_KEY);
+              // `!== null`, not truthiness: the parked text can be an empty string, and the button
+              // must not silently do nothing while the warning is still showing.
+              if (parked !== null) downloadTextFile("sincewhen-unreadable-data.json", parked);
+            }}
           >
             <DownloadIcon />
             Save the unreadable data
           </Button>
+          {confirmingDiscard ? (
+            <>
+              <Button variant="destructive" size="lg" onClick={() => appStore.getState().discardUnreadableBackup()}>
+                Yes, delete it for good
+              </Button>
+              <Button variant="outline" size="lg" onClick={() => setConfirmingDiscard(false)}>
+                Keep it
+              </Button>
+            </>
+          ) : (
+            <Button variant="ghost" size="lg" className="text-red-600" onClick={() => setConfirmingDiscard(true)}>
+              Discard the unreadable data
+            </Button>
+          )}
         </Section>
       )}
 

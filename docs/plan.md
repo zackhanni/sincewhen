@@ -90,7 +90,9 @@ look worse than a room with 3 of 10 overdue.
   piecemeal. Sub-tasks that were not due do not block this (the same "regrout" reason), folders
   between the parent and the sub-task are stepped over, and the rule repeats up the tree.
 - Every completion shows an undo toast. Undo restores only the nodes that completion touched
-  (found by a shared `batchId` in the completion log), so other edits made meanwhile survive.
+  (found by a shared `batchId` in the completion log), so other edits made meanwhile survive. A
+  node completed again since is left alone. `batchId` uniqueness is the store's job (it passes a
+  fresh UUID); core does not check it.
 - Turning a task into a folder keeps its `lastCompleted`, so switching it back loses nothing.
 - Duplicating a branch can either keep the last-completed dates or reset the copies to
   "never done"; the UI should ask when copying into a different room.
@@ -119,7 +121,9 @@ look worse than a room with 3 of 10 overdue.
   async), which is the seam a Supabase implementation plugs into.
 - Saved data is never trusted: it passes `parseAppData` on load. If it cannot be read, the raw
   text is copied to `sincewhen:unreadable-backup` and the app shows a banner, instead of
-  starting empty and overwriting the user's tasks on the next save.
+  starting empty and overwriting the user's tasks on the next save. The banner stays on later
+  launches for as long as that copy exists; Settings can save it or discard it.
+- A save that fails (private browsing, full device) raises one persistent warning toast.
 - **The app must be an installed PWA.** Safari deletes script-written storage after 7 days
   without a visit; a home-screen PWA is exempt. See [pwa.md](pwa.md).
 - Export is a JSON file, offered both as a download and through the Web Share API
@@ -139,7 +143,8 @@ look worse than a room with 3 of 10 overdue.
 pages and needs three caching rules, which is easier to read and debug than a generated worker.
 On install it caches both pages and every build file their HTML refers to, so the very first
 offline launch works. Pages are network-first (a deploy shows up on next launch), hashed build
-files are cache-first. It registers in production only. `lib/pwa/pwa.ts` holds registration,
+files are cache-first. Each deploy registers the worker under a new URL (`?v=<build id>`) and
+gets its own cache, so old build files are dropped on every update. It registers in production only. `lib/pwa/pwa.ts` holds registration,
 the persistent-storage request, the icon badge and the installed check.
 
 ## Code layout

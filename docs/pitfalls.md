@@ -57,8 +57,24 @@ and reads the contents rather than trusting the type. Feature-detect; never assu
 (desktop browsers mostly lack it, and the button is hidden there).
 
 ### A new page must be added to the service worker
-`/settings` was added to `PAGES` in `sw.js` and `CACHE` was bumped to `sincewhen-v2`. Forgetting
-either means the page fails offline, with no error during development.
+`/settings` had to be added to `PAGES` in `sw.js`. Forgetting means the page fails offline, with
+no error during development.
+
+### A fixed cache name grows forever
+`sw.js` does not change between deploys, so with a constant cache name `install` and `activate`
+never re-ran and every deploy's hashed build files piled up in one cache until quota ran out. The
+cache is now named after the build id passed in the registration URL. Also: `cache.put` rejects
+when storage is full, so every write goes through `tryToCache` — a failed cache write must not
+fail a request whose network fetch succeeded. (Found by CodeRabbit on PR #3.)
+
+### Playwright's `waitForFunction` passes instantly on an async predicate
+The returned Promise is truthy. A cache-upgrade check written that way "passed" while the old
+cache was still there, under a log line claiming it was deleted. Poll from Node instead, and make
+the script throw when the expected state never arrives.
+
+### Do not ask for persistent storage on page load
+Firefox answers `navigator.storage.persist()` with a permission prompt. It is now requested after
+the user adds an item or restores a backup. (Found by CodeRabbit on PR #3.)
 
 ## Dates
 
@@ -86,6 +102,20 @@ many locales and scrambles the order. Use `compareSortOrder` from `lib/core`.
 plausible but is invalid (a key may not end in the zero digit) and throws. In tests and seed
 data, generate keys with `generateKeyBetween(previousKey, null)`.
 
+### One invalid node poisons the whole saved file
+`parseAppData` rejects a file if any node fails the schema, so a single bad write (an empty name,
+a frequency of 0, a duplicate id, a malformed sort key) turns every task into "unreadable data"
+on the next launch. `addNode`, `updateNode` and `duplicateSubtree` therefore validate what they
+are about to write and throw `INVALID_DATA` (copies included: an injected `newId` is untrusted
+input too). Any new operation that creates or edits a node must
+do the same. (Found by CodeRabbit on PR #1.)
+
+### Undo must not rewind past a later completion
+If a task is completed twice and the first toast's Undo is pressed, restoring the old date would
+contradict the second completion still in the log. `undoCompletion` only restores a node whose
+newest log entry belongs to the batch being undone. This relies on the log being in time order:
+always append to `completions`, never sort or prepend.
+
 ### The order of the `nodes` array means nothing
 Display order comes from `sortOrder` and from urgency. Operations append to the array and
 `getDescendants` walks depth-first, so array order is arbitrary. Always read children through
@@ -107,6 +137,19 @@ If loading fails and the app carries on with the empty default, the next save ov
 user's tasks for good. `merge` in `app-store.ts` parks the raw text under a backup key and sets
 `loadError`. Keep that path, and keep the banner that shows it.
 
+`loadError` alone is not enough: it lasts one session. Once the user adds a task, the next launch
+loads cleanly, the banner would vanish, and the parked copy would be stranded. So the banner also
+follows `hasUnreadableBackup`, which is read from the parked copy itself on every launch (derived,
+not a second saved flag that could disagree). It clears only when the user discards the copy in
+Settings. (Found by CodeRabbit on PR #2.)
+
+### A failed save must be shown, not only logged
+localStorage writes throw in private browsing and when the device is full. Logging to the console
+left the app looking healthy while every change was lost. `use-app-store.ts` shows one persistent
+toast per run of failures, and dismisses it by id when a save succeeds again — a warning that
+never times out must be taken down by hand, or it keeps saying something untrue. (Found by
+CodeRabbit on PR #2 and #5.)
+
 ### `{ ...node, ...edit }` with an undefined value erases the field
 An optional form field that is present-but-undefined wipes the stored value when spread.
 `updateNode` strips undefined keys; "not provided" means "leave it alone".
@@ -126,6 +169,13 @@ do not cache `todayCalendarDate()` at module level.
 `border-${colour}-500` is never generated. `lib/status-styles.ts` writes every class in full.
 
 ## Tooling
+
+### CodeRabbit silently skips stacked PRs, and its check still says "pass"
+It reviews only PRs whose base is the default branch. PRs #3-#5 reported "Review skipped: reviews
+are disabled for this base branch" and #2 "Review rate limited" — all with a green check and zero
+comments, which looks exactly like a clean review. Read the check's description, not its colour.
+A stacked PR gets reviewed only after the one below merges and it is retargeted; then comment
+`@coderabbitai review`. The plan allows 3 reviews per hour, re-reviews included.
 
 ### A stale server makes a good build look broken
 `pkill -f "next start --port N"` did not match the real process (it runs as `next-server`), so an

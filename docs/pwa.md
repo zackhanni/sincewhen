@@ -19,8 +19,20 @@ because the installed app has its own storage. Export first if you already have 
 - The app opens without browser chrome (no address bar).
 - It opens with the network off.
 - Settings > This device says "Installed as an app".
-- Storage persistence is requested but browsers may refuse silently (Safari usually does), so
-  the backup nudge is the real safety net.
+- Storage persistence is requested but browsers may refuse silently (Safari usually does).
+
+## What actually protects the data
+
+Only a backup file kept somewhere else (Settings > Back up). Everything on the device is
+best-effort:
+
+- Installing avoids Safari's 7-day cleanup, but the browser can still evict storage under
+  pressure, and `navigator.storage.persist()` is a request the browser may ignore.
+- The "Time to back up" nudge on the Due tab only works while the data is still there: it reads
+  `lastBackupDate` from the same storage. If that storage is wiped, the nudge is wiped with it —
+  it can remind you a backup is old, but it cannot warn you after a loss.
+
+So export on a schedule of your own, and always before changing phones or clearing site data.
 
 ## How it is built
 
@@ -30,8 +42,8 @@ because the installed app has its own storage. Export first if you already have 
   (artwork shrunk to the middle 72% so Android can crop it to any shape).
 - `public/sw.js` — the service worker. Read its comments first; the rules are in plan.md.
 - `next.config.ts` — serves `sw.js` with `no-store`, so a fixed worker reaches phones at once.
-- `lib/pwa/pwa.ts` — registers the worker (production only), calls
-  `navigator.storage.persist()`, and sets the icon badge to the overdue count. The badge only
+- `lib/pwa/pwa.ts` — registers the worker (production only), asks for persistent storage (from
+  a user action: adding an item or restoring a backup — never on page load), and sets the icon badge to the overdue count. The badge only
   updates while the app is open; a background update needs push.
 - `components/app/install-hint.tsx` — the install nudge.
 
@@ -42,10 +54,14 @@ Chrome DevTools: Application > Service workers to see it, and Network > Offline 
 `localhost` counts as secure, so no HTTPS is needed locally. To start clean, use Application >
 Storage > Clear site data (this also deletes your tasks on that origin).
 
-## Changing the worker
+## Updates and the cache
 
-Bump `CACHE` in `sw.js` whenever the caching rules change; old caches are deleted on activate.
-Adding a page to the app means adding it to `PAGES`, or it will not open offline.
+Each deploy gets its own cache. `next.config.ts` sets `NEXT_PUBLIC_BUILD_ID` (the Vercel commit
+SHA, or the build time locally) and the page registers `/sw.js?v=<build id>`. A new URL is a new
+worker to the browser: it installs, fills `sincewhen-<build id>`, and only then does `activate`
+delete the previous cache. There is nothing to bump by hand, and old build files cannot pile up.
+
+Adding a page to the app still means adding it to `PAGES` in `sw.js`, or it will not open offline.
 
 ## Alternatives, if a PWA stops being enough
 

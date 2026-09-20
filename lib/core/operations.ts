@@ -10,7 +10,7 @@ import {
   getSubtreeHeight,
   type TreeIndex,
 } from "./tree";
-import type { AppData, Frequency, TaskNode } from "./types";
+import { taskNodeSchema, type AppData, type Frequency, type TaskNode } from "./types";
 
 // Every operation here takes the saved data and returns a NEW copy with the change applied.
 // Nothing is mutated, so the store can swap the result in and React sees a fresh reference.
@@ -20,6 +20,24 @@ function requireNode(index: TreeIndex, id: string): TaskNode {
   const node = index.byId.get(id);
   if (!node) throw new CoreError("NOT_FOUND", `No node with id "${id}"`);
   return node;
+}
+
+/**
+ * Refuses a node that breaks the saved-data rules (empty or over-long name, a frequency of 0, a
+ * date that does not exist). The forms check these too, but this is the last line of defence:
+ * one invalid node written to storage makes parseAppData reject the WHOLE file on next launch.
+ */
+function assertValidNode(node: TaskNode): void {
+  const parsed = taskNodeSchema.safeParse(node);
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    throw new CoreError("INVALID_DATA", `${issue.path.join(".")}: ${issue.message}`);
+  }
+}
+
+/** Two nodes with one id would make the lookup tables disagree, and fail the next load. */
+function assertUnusedId(index: TreeIndex, id: string): void {
+  if (index.byId.has(id)) throw new CoreError("INVALID_DATA", `The id "${id}" is already in use`);
 }
 
 /** A sort key that places a new node after the last existing child of `parentId`. */
@@ -53,6 +71,7 @@ export type NewNodeInput = {
 
 export function addNode(data: AppData, input: NewNodeInput): AppData {
   const index = buildTreeIndex(data.nodes);
+  assertUnusedId(index, input.id);
   if (input.parentId !== null) requireNode(index, input.parentId);
   assertFitsUnder(index, input.parentId, 1);
 
@@ -65,23 +84,23 @@ export function addNode(data: AppData, input: NewNodeInput): AppData {
     createdAt: input.today,
     sortOrder: sortOrderAtEnd(index, input.parentId),
   };
+  assertValidNode(node);
   return { ...data, nodes: [...data.nodes, node] };
 }
 
 export type NodeEdit = Partial<Pick<TaskNode, "name" | "frequency" | "lastCompleted">>;
 
 export function updateNode(data: AppData, id: string, edit: NodeEdit): AppData {
-  requireNode(buildTreeIndex(data.nodes), id);
+  const existing = requireNode(buildTreeIndex(data.nodes), id);
   // Drop keys that are present but undefined. Spreading `{ lastCompleted: undefined }` over a
   // node would silently erase the stored date; "not provided" must mean "leave it alone".
   const provided = Object.fromEntries(
     Object.entries(edit).filter(([, value]) => value !== undefined),
   ) as NodeEdit;
   const cleanEdit = provided.name === undefined ? provided : { ...provided, name: provided.name.trim() };
-  return {
-    ...data,
-    nodes: data.nodes.map((node) => (node.id === id ? { ...node, ...cleanEdit } : node)),
-  };
+  const edited = { ...existing, ...cleanEdit };
+  assertValidNode(edited);
+  return { ...data, nodes: data.nodes.map((node) => (node.id === id ? edited : node)) };
 }
 
 /** Moves a node, and everything inside it, under a new parent (null = make it a location). */
@@ -104,6 +123,8 @@ export function moveNode(data: AppData, id: string, newParentId: string | null):
   const moved = { ...node, parentId: newParentId, sortOrder: sortOrderAtEnd(index, newParentId) };
   return { ...data, nodes: data.nodes.map((n) => (n.id === id ? moved : n)) };
 }
+
+const COPY_SUFFIX = " (copy)";
 
 export type DuplicateOptions = {
   /** Called once per copied node. Injected so this file stays pure and tests get predictable ids. */
@@ -134,13 +155,20 @@ export function duplicateSubtree(
 
   const originals = [source, ...getDescendants(index, id)];
   const copyIdOf = new Map(originals.map((node) => [node.id, options.newId()]));
+  const copyIds = [...copyIdOf.values()];
+  copyIds.forEach((copyId) => assertUnusedId(index, copyId));
+  if (new Set(copyIds).size !== copyIds.length) {
+    throw new CoreError("INVALID_DATA", "newId returned the same id twice");
+  }
 
   const copies = originals.map((original): TaskNode => {
     const isRoot = original.id === id;
     // Only a copy landing next to its original needs a different name to tell them apart.
+    // Trim the NAME to make room, not the result: slicing the whole string would cut the suffix
+    // off a name already at the limit, leaving the copy indistinguishable from the original.
     const name =
       isRoot && newParentId === source.parentId
-        ? `${original.name} (copy)`.slice(0, MAX_NAME_LENGTH)
+        ? `${original.name.slice(0, MAX_NAME_LENGTH - COPY_SUFFIX.length)}${COPY_SUFFIX}`
         : original.name;
     return {
       ...original,
@@ -154,6 +182,10 @@ export function duplicateSubtree(
       lastCompleted: options.resetCompletion ? null : original.lastCompleted,
     };
   });
+
+  // Same rule as addNode: never hand back a node that would fail the next load. This catches a
+  // `newId` that returns something unusable, such as an empty string.
+  copies.forEach(assertValidNode);
 
   // The completion log is not copied: those completions happened to the original, not the copy.
   return { ...data, nodes: [...data.nodes, ...copies] };

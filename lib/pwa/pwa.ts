@@ -8,7 +8,8 @@
 export function registerServiceWorker(): void {
   if (process.env.NODE_ENV !== "production") return;
   if (!("serviceWorker" in navigator)) return;
-  navigator.serviceWorker.register("/sw.js").catch((error) => {
+  // The build id in the URL makes each deploy a new worker with its own cache; see sw.js.
+  navigator.serviceWorker.register(`/sw.js?v=${process.env.NEXT_PUBLIC_BUILD_ID}`).catch((error) => {
     console.error("Service worker registration failed", error);
   });
 }
@@ -17,11 +18,19 @@ export function registerServiceWorker(): void {
  * Asks the browser not to evict this site's storage when space runs low. Browsers decide on
  * their own whether to grant it (Chrome mostly grants installed apps; Safari rarely says yes),
  * so this is a request, not a guarantee — backups are the real safety net.
+ *
+ * Call it from a user action (adding an item, restoring a backup), not on page load: Firefox
+ * answers with a permission prompt, which makes no sense to someone who has not yet saved anything.
  */
 export async function requestPersistentStorage(): Promise<boolean> {
-  if (!navigator.storage?.persist) return false;
-  if (await navigator.storage.persisted()) return true;
-  return navigator.storage.persist();
+  try {
+    if (!navigator.storage?.persist) return false;
+    if (await navigator.storage.persisted()) return true;
+    return await navigator.storage.persist();
+  } catch {
+    // Callers fire and forget, so a rejection here would surface as an unhandled error.
+    return false;
+  }
 }
 
 /**

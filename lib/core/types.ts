@@ -1,8 +1,23 @@
+import { generateKeyBetween } from "fractional-indexing";
 import { z } from "zod";
 import { MAX_FREQUENCY_COUNT, MAX_NAME_LENGTH } from "./constants";
 import { isValidCalendarDate } from "./dates";
 
 const calendarDateSchema = z.string().refine(isValidCalendarDate, "Must be a real YYYY-MM-DD date");
+
+/**
+ * True if `key` is a well-formed fractional-indexing key. The library has no public validator,
+ * but it checks every key it is handed, so asking it for "a key after this one" is the test.
+ * Without this, an imported file with a bad key loads fine and then breaks the next "add".
+ */
+function isValidSortKey(key: string): boolean {
+  try {
+    generateKeyBetween(key, null);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export const frequencySchema = z.object({
   count: z.number().int().min(1).max(MAX_FREQUENCY_COUNT),
@@ -32,7 +47,7 @@ export const taskNodeSchema = z.object({
   lastCompleted: calendarDateSchema.nullable(),
   createdAt: calendarDateSchema,
   /** A fractional-indexing key. Compare with plain `<`, never localeCompare — see compareSortOrder. */
-  sortOrder: z.string().min(1),
+  sortOrder: z.string().refine(isValidSortKey, "Must be a valid sort key"),
 });
 
 /** One entry in the completion log. Everything completed by a single tap shares a `batchId`, so undo can find it. */
