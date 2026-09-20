@@ -19,8 +19,20 @@ because the installed app has its own storage. Export first if you already have 
 - The app opens without browser chrome (no address bar).
 - It opens with the network off.
 - Settings > This device says "Installed as an app".
-- Storage persistence is requested but browsers may refuse silently (Safari usually does), so
-  the backup nudge is the real safety net.
+- Storage persistence is requested but browsers may refuse silently (Safari usually does).
+
+## What actually protects the data
+
+Only a backup file kept somewhere else (Settings > Back up). Everything on the device is
+best-effort:
+
+- Installing avoids Safari's 7-day cleanup, but the browser can still evict storage under
+  pressure, and `navigator.storage.persist()` is a request the browser may ignore.
+- The "Time to back up" nudge on the Due tab only works while the data is still there: it reads
+  `lastBackupDate` from the same storage. If that storage is wiped, the nudge is wiped with it —
+  it can remind you a backup is old, but it cannot warn you after a loss.
+
+So export on a schedule of your own, and always before changing phones or clearing site data.
 
 ## How it is built
 
