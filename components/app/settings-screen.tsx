@@ -180,7 +180,9 @@ export function SettingsScreen() {
             onClick={() => {
               // Read at the moment of the tap, so the file is whatever is parked right now.
               const parked = readStorage(CORRUPT_BACKUP_KEY);
-              if (parked) downloadTextFile("sincewhen-unreadable-data.json", parked);
+              // `!== null`, not truthiness: the parked text can be an empty string, and the button
+              // must not silently do nothing while the warning is still showing.
+              if (parked !== null) downloadTextFile("sincewhen-unreadable-data.json", parked);
             }}
           >
             <DownloadIcon />

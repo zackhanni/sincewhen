@@ -14,6 +14,9 @@ import { createAppStore, type AppState } from "./app-store";
 /** So a run of failed saves shows one warning, not one per tap. Reset when saving works again. */
 let saveFailureReported = false;
 
+/** A fixed id lets the warning be taken down again once saving recovers. */
+const SAVE_FAILURE_TOAST_ID = "save-failure";
+
 const deviceStorage: StateStorage = {
   getItem: (key) => {
     try {
@@ -25,7 +28,11 @@ const deviceStorage: StateStorage = {
   setItem: (key, value) => {
     try {
       window.localStorage.setItem(key, value);
-      saveFailureReported = false;
+      if (saveFailureReported) {
+        // Saving works again, so the warning is no longer true. It never times out on its own.
+        toast.dismiss(SAVE_FAILURE_TOAST_ID);
+        saveFailureReported = false;
+      }
     } catch (error) {
       console.error("Sincewhen could not save to this device", error);
       if (!saveFailureReported) {
@@ -33,6 +40,7 @@ const deviceStorage: StateStorage = {
         toast.error("Changes are not being saved on this device.", {
           description: "Private browsing or a full device can cause this. Back up from Settings now.",
           duration: Infinity,
+          id: SAVE_FAILURE_TOAST_ID,
         });
       }
     }

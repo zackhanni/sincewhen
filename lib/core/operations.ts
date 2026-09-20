@@ -183,6 +183,10 @@ export function duplicateSubtree(
     };
   });
 
+  // Same rule as addNode: never hand back a node that would fail the next load. This catches a
+  // `newId` that returns something unusable, such as an empty string.
+  copies.forEach(assertValidNode);
+
   // The completion log is not copied: those completions happened to the original, not the copy.
   return { ...data, nodes: [...data.nodes, ...copies] };
 }

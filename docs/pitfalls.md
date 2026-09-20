@@ -106,7 +106,8 @@ data, generate keys with `generateKeyBetween(previousKey, null)`.
 `parseAppData` rejects a file if any node fails the schema, so a single bad write (an empty name,
 a frequency of 0, a duplicate id, a malformed sort key) turns every task into "unreadable data"
 on the next launch. `addNode`, `updateNode` and `duplicateSubtree` therefore validate what they
-are about to write and throw `INVALID_DATA`. Any new operation that creates or edits a node must
+are about to write and throw `INVALID_DATA` (copies included: an injected `newId` is untrusted
+input too). Any new operation that creates or edits a node must
 do the same. (Found by CodeRabbit on PR #1.)
 
 ### Undo must not rewind past a later completion
@@ -145,7 +146,9 @@ Settings. (Found by CodeRabbit on PR #2.)
 ### A failed save must be shown, not only logged
 localStorage writes throw in private browsing and when the device is full. Logging to the console
 left the app looking healthy while every change was lost. `use-app-store.ts` shows one persistent
-toast per run of failures. (Found by CodeRabbit on PR #2.)
+toast per run of failures, and dismisses it by id when a save succeeds again — a warning that
+never times out must be taken down by hand, or it keeps saying something untrue. (Found by
+CodeRabbit on PR #2 and #5.)
 
 ### `{ ...node, ...edit }` with an undefined value erases the field
 An optional form field that is present-but-undefined wipes the stored value when spread.

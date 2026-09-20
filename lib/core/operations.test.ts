@@ -162,6 +162,13 @@ describe("duplicateSubtree", () => {
     expectCode(() => duplicateSubtree(data, "clean", "guest", { ...options, newId: () => "same" }), "INVALID_DATA");
   });
 
+  it("refuses an id from newId that would not survive being loaded back", () => {
+    expectCode(
+      () => duplicateSubtree(data, "scrub", "guest", { newId: () => "", today: TODAY, resetCompletion: false }),
+      "INVALID_DATA",
+    );
+  });
+
   it("can reset the copies to never-done", () => {
     const kept = duplicateSubtree(data, "clean", "guest", { newId: counterIds(), today: TODAY, resetCompletion: false });
     const reset = duplicateSubtree(data, "clean", "guest", { newId: counterIds(), today: TODAY, resetCompletion: true });
