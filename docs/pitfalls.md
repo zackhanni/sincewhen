@@ -45,6 +45,21 @@ Without one the production build fails, because the page can no longer be preren
 `tsc` reported a missing `app/rooms/[id]/page.js` after the folder was deleted. `pnpm build`
 (or `pnpm dev`) regenerates the types; the error is not in the source.
 
+### A page cannot tell whether a download was kept
+`downloadTextFile` fires and forgets, so "Save backup file" marks the backup as done the moment
+it starts. Sharing is different: `navigator.share` rejects with `AbortError` when the sheet is
+closed, which `shareFile` treats as "not backed up", not as an error.
+
+### `navigator.canShare` may refuse JSON
+File-type support in the share sheet varies by browser. `makeShareableFile` tries
+`application/json`, then `text/plain`, keeping the `.json` name. The import picker accepts both,
+and reads the contents rather than trusting the type. Feature-detect; never assume sharing exists
+(desktop browsers mostly lack it, and the button is hidden there).
+
+### A new page must be added to the service worker
+`/settings` was added to `PAGES` in `sw.js` and `CACHE` was bumped to `sincewhen-v2`. Forgetting
+either means the page fails offline, with no error during development.
+
 ## Dates
 
 ### A month is not a day count
@@ -111,6 +126,12 @@ do not cache `todayCalendarDate()` at module level.
 `border-${colour}-500` is never generated. `lib/status-styles.ts` writes every class in full.
 
 ## Tooling
+
+### A stale server makes a good build look broken
+`pkill -f "next start --port N"` did not match the real process (it runs as `next-server`), so an
+old server kept the port, the new one died with EADDRINUSE unnoticed, and every request returned
+500 from a half-replaced build. Stop servers by port — `lsof -ti :3457 | xargs kill` — and check
+who is answering before trusting a failure.
 
 ### `shadcn init` wrote a self-referencing font variable
 It set `--font-sans: var(--font-sans)` in `globals.css`, which resolves to nothing, so the whole

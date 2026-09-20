@@ -48,8 +48,20 @@ describe("app store", () => {
     const store = await loadedStore(storage);
     store.getState().addNode({ parentId: null, name: "Home", frequency: null, lastCompleted: null });
     const saved = JSON.parse(items.get(STORAGE_KEY)!);
-    expect(Object.keys(saved.state).sort()).toEqual(["activeLocationId", "data"]);
+    expect(Object.keys(saved.state).sort()).toEqual(["activeLocationId", "data", "lastBackupDate"]);
     expect(saved.version).toBe(SCHEMA_VERSION);
+  });
+
+  it("remembers the last backup date, and ignores a saved one that is not a date", async () => {
+    const { storage, items } = memoryStorage();
+    const first = await loadedStore(storage);
+    first.getState().markBackedUp();
+    expect((await loadedStore(storage)).getState().lastBackupDate).toBe(first.getState().lastBackupDate);
+
+    const saved = JSON.parse(items.get(STORAGE_KEY)!);
+    saved.state.lastBackupDate = "yesterday";
+    items.set(STORAGE_KEY, JSON.stringify(saved));
+    expect((await loadedStore(storage)).getState().lastBackupDate).toBeNull();
   });
 
   it("completes and undoes through core", async () => {

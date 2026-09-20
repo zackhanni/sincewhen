@@ -18,8 +18,9 @@ because the installed app has its own storage. Export first if you already have 
 
 - The app opens without browser chrome (no address bar).
 - It opens with the network off.
-- Settings shows storage as persistent (`navigator.storage.persisted()` returns true). iOS may
-  not report this reliably; the backup nudge is the real safety net.
+- Settings > This device says "Installed as an app".
+- Storage persistence is requested but browsers may refuse silently (Safari usually does), so
+  the backup nudge is the real safety net.
 
 ## How it is built
 

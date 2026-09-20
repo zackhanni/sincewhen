@@ -41,10 +41,19 @@ next phase may branch from an unmerged phase, but never further than that.
 
 ## Phase 5 — Settings and backup
 
-- [ ] JSON file export
-- [ ] Share-sheet export
-- [ ] Import: zod validation, preview with counts, replace
-- [ ] Backup-age nudge
+- [x] JSON file export
+- [x] Share-sheet export
+- [x] Import: zod validation, preview with counts, replace
+- [x] Backup-age nudge
+
+## Still to verify on a real phone
+
+Headless Chromium cannot exercise these, so they are built but unproven:
+
+- [ ] Install from Safari, launch from the icon, relaunch in airplane mode.
+- [ ] "Share backup" opens the iOS share sheet and the file arrives in Messages / Files.
+- [ ] "Choose a backup file" can pick that file on a second device and restores it.
+- [ ] The overdue count shows on the home-screen icon.
 
 ## Future additions (not v1)
 

@@ -6,6 +6,7 @@ import {
   completeTask,
   createEmptyAppData,
   deleteSubtree,
+  isValidCalendarDate,
   duplicateSubtree,
   moveNode,
   parseAppData,
@@ -40,6 +41,8 @@ export type AppState = {
   data: AppData;
   /** The location whose rooms and due tasks are shown. null = show all locations. */
   activeLocationId: string | null;
+  /** The day of the last export, for the "time to back up" nudge. null = never backed up. */
+  lastBackupDate: CalendarDate | null;
   /**
    * False until saved data has been read from the device. Screens must wait for it: before
    * that, `data` is the empty default, and rendering it would flash "no tasks yet" at someone
@@ -59,10 +62,11 @@ export type AppState = {
   setActiveLocation: (id: string | null) => void;
   /** Replaces everything with an imported backup that has already passed parseAppData. */
   replaceAllData: (data: AppData) => void;
+  markBackedUp: () => void;
 };
 
 /** The slice of state that is written to the device. Everything else is rebuilt on load. */
-type PersistedState = Pick<AppState, "data" | "activeLocationId">;
+type PersistedState = Pick<AppState, "data" | "activeLocationId" | "lastBackupDate">;
 
 const newId = () => crypto.randomUUID();
 
@@ -84,6 +88,7 @@ export function createAppStore(storage: StateStorage) {
       (set, get) => ({
         data: createEmptyAppData(),
         activeLocationId: null,
+        lastBackupDate: null,
         hasHydrated: false,
         loadError: null,
 
@@ -116,6 +121,7 @@ export function createAppStore(storage: StateStorage) {
         undoCompletion: (undo) => set({ data: undoCompletion(get().data, undo) }),
         setActiveLocation: (id) => set({ activeLocationId: id }),
         replaceAllData: (data) => set({ data, activeLocationId: null, loadError: null }),
+        markBackedUp: () => set({ lastBackupDate: todayCalendarDate() }),
       }),
       {
         name: STORAGE_KEY,
@@ -124,6 +130,7 @@ export function createAppStore(storage: StateStorage) {
         partialize: (state): PersistedState => ({
           data: state.data,
           activeLocationId: state.activeLocationId,
+          lastBackupDate: state.lastBackupDate,
         }),
         // Next.js renders on the server first, where there is no device storage. Loading is
         // started by hand from a client effect (see StoreHydrator) so server and client agree
@@ -158,6 +165,10 @@ export function createAppStore(storage: StateStorage) {
             ...current,
             data: parsed.data,
             activeLocationId: locationExists ? (saved.activeLocationId ?? null) : null,
+            lastBackupDate:
+              typeof saved.lastBackupDate === "string" && isValidCalendarDate(saved.lastBackupDate)
+                ? saved.lastBackupDate
+                : null,
           };
         },
 

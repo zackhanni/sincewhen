@@ -125,8 +125,12 @@ look worse than a room with 3 of 10 overdue.
 - Export is a JSON file, offered both as a download and through the Web Share API
   (`navigator.share({ files })`), which opens the share sheet — that is the "text it to myself"
   feature, with no backend.
-- Import is an in-app file picker, validated with zod, with a preview and a confirmation before
-  replacing data. **A texted import link does not work**: an installed PWA has separate storage
+- Exporting records `lastBackupDate`. Once there is data and the last backup is 30+ days old (or
+  there has never been one), the Due tab shows a nudge linking to Settings.
+- Import is an in-app file picker, validated by the same `parseAppData` used on load, with a
+  preview (counts and export date) and a confirmation before replacing data. The data being
+  replaced is first copied to `sincewhen:before-import` so a wrong import can be recovered by hand.
+- Settings also offers the raw text kept under `sincewhen:unreadable-backup`, if there is any. **A texted import link does not work**: an installed PWA has separate storage
   from Safari, and a link opens Safari.
 
 ## Offline
@@ -149,7 +153,9 @@ data and returns a new copy; a refused operation throws a `CoreError` with a `co
 `use-app-store.ts` binds it to React and localStorage). `components/app` holds the screens:
 `app-shell` (loading, tab bar), `due-screen`, `node-screen`, `node-row`, and one shared bottom
 sheet (`node-sheet` + `sheet-context`) that shows the menu, the add / edit form (`node-form`,
-TanStack Form), the move / duplicate picker or the delete prompt.
+TanStack Form), the move / duplicate picker or the delete prompt. `settings-screen` handles
+backup and restore, with the file logic in `lib/backup` (`backup.ts` is pure and tested;
+`send-file.ts` is the browser share / download code).
 
 ## Stack
 
