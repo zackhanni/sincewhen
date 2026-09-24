@@ -46,6 +46,13 @@ next phase may branch from an unmerged phase, but never further than that.
 - [x] Import: zod validation, preview with counts, replace
 - [x] Backup-age nudge
 
+## Launch (owner: Zack)
+
+- [ ] Serve at `sincewhen.webwizarddev.com` — back up on the old address FIRST; a new domain is
+      an empty app (steps at the top of `portfolio-writeup.md`).
+- [ ] Add the entry and 5 screenshots to the `/portfolio` page of `web-wizard-dev-v2`.
+- [ ] Reddit post for outside testers, after the phone checks below.
+
 ## Still to verify on a real phone
 
 Headless Chromium cannot exercise these, so they are built but unproven:
