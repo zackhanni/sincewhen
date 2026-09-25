@@ -20,6 +20,8 @@ locations > rooms > tasks > sub-tasks. Client-only for now: data lives on the de
 - `docs/pitfalls.md` — traps already hit. **Add an entry whenever you hit a new one.**
 - `docs/roadmap.md` — phase checklists and future additions. Tick items as they land.
 - `docs/pwa.md` — install steps and alternatives.
+- `docs/portfolio-writeup.md` — public-facing copy (portfolio entry, Reddit post) and the
+  domain-move checklist. Keep its numbers (tests, review findings) true when they change.
 
 ## Rules
 
