@@ -60,7 +60,7 @@ export function todayCalendarDate(now: Date = new Date()): CalendarDate {
  *
  * Months and years use calendar arithmetic, not day counts: 2 months after Jan 15 is Mar 15,
  * whatever the month lengths. When the target month is too short the day clamps to its last day
- * (Jan 31 + 1 month = Feb 28), which is date-fns' behaviour.
+ * (Jan 31 + 1 month = Feb 28), which is date-fns' behavior.
  */
 export function addFrequency(from: CalendarDate, frequency: Frequency): CalendarDate {
   const date = toLocalDate(from);

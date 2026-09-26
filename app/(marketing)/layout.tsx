@@ -13,7 +13,7 @@ const NAV = [
   { href: `#${faqs.id}`, label: "FAQ" },
 ];
 
-/** The three status colours as a small mark beside the name, until there is a real logo. */
+/** The three status colors as a small mark beside the name, until there is a real logo. */
 function Wordmark() {
   return (
     <span className="flex items-center gap-2 font-semibold tracking-tight">

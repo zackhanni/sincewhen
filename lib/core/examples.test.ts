@@ -34,7 +34,7 @@ describe("buildExampleData", () => {
 
   // The arrangement has to hold on every day, not only the day the test was written: month
   // lengths change how far "35 days ago" is from a monthly due date.
-  it("always shows every colour, whatever day it is added (two years checked, one a leap year)", () => {
+  it("always shows every color, whatever day it is added (two years checked, one a leap year)", () => {
     for (const today of everyDay("2027-01-01", 365 * 2 + 1)) {
       const data = buildExampleData(today, counterIds());
       const statuses = new Set(data.nodes.map((node) => getTaskTiming(node, today)?.status).filter(Boolean));
@@ -43,7 +43,7 @@ describe("buildExampleData", () => {
     }
   });
 
-  it("gives the top-level items different colours: Home red, Car green, Personal yellow", () => {
+  it("gives the top-level items different colors: Home red, Car green, Personal yellow", () => {
     const today = "2026-09-26";
     const data = buildExampleData(today, counterIds());
     const index = buildTreeIndex(data.nodes);

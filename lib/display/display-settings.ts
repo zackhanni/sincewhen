@@ -19,15 +19,15 @@ export type SizeChoice = DisplaySettings["size"];
 export type StartScreenChoice = DisplaySettings["startOn"];
 
 /**
- * Folders first: Zack finds the colour overview (which room needs work, cleaning or exercise)
+ * Folders first: Zack finds the color overview (which room needs work, cleaning or exercise)
  * more useful than the mixed Due list. Under test with other users (2026-09-26).
  */
 export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = { theme: "system", size: "default", startOn: "folders" };
 
 export const DISPLAY_SETTINGS_KEY = "sincewhen:display";
 
-/** The browser bar colour for each resolved theme: the page background, as a hex colour. */
-const BAR_COLOUR = { light: "#ffffff", dark: "#0a0a0a" } as const;
+/** The browser bar color for each resolved theme: the page background, as a hex color. */
+const BAR_COLOR = { light: "#ffffff", dark: "#0a0a0a" } as const;
 
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 
@@ -69,7 +69,7 @@ export function resolvesToDark(theme: ThemeChoice): boolean {
   return theme === "dark";
 }
 
-/** Puts the settings on the page: the `dark` class and `data-size` on <html>, and the browser bar colour. */
+/** Puts the settings on the page: the `dark` class and `data-size` on <html>, and the browser bar color. */
 export function applyDisplaySettings(settings: DisplaySettings): void {
   const root = document.documentElement;
   const dark = resolvesToDark(settings.theme);
@@ -77,7 +77,7 @@ export function applyDisplaySettings(settings: DisplaySettings): void {
   // Lets the browser draw its own parts (scroll bars, date pickers) to match.
   root.style.colorScheme = dark ? "dark" : "light";
   root.dataset.size = settings.size;
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", dark ? BAR_COLOUR.dark : BAR_COLOUR.light);
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", dark ? BAR_COLOR.dark : BAR_COLOR.light);
 }
 
 /**

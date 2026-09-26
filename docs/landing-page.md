@@ -28,10 +28,10 @@ theme, and the Large size too if they chose it in the app.
    Sincewhen", and the Folders screenshot.
 2. **Sound familiar?** — the three problems: forgetting when, calendar reminders that don't fit,
    everything looking equally urgent.
-3. **How it works** — add with a frequency, check off, follow the colours.
+3. **How it works** — add with a frequency, check off, follow the colors.
 4. **See where the work is** — the three screenshots with captions.
 5. **Everything it does** — ten features.
-6. **Made for the jobs that come round again** — eight kinds of use (home, cleaning, car, garden,
+6. **Made for the jobs that come around again** — eight kinds of use (home, cleaning, car, garden,
    pets, health, exercise, work) with example tasks.
 7. **Your tasks stay yours** — privacy.
 8. **No app store needed** — install steps (the same component as the app), the QR code on
@@ -41,6 +41,8 @@ theme, and the Large size too if they chose it in the app.
 
 ## Rules for the copy
 
+- American spelling and phrasing throughout, in the app too (color, organized, "check off",
+  "right away"). Switched from British on 2026-09-26.
 - Every claim must be true of the app as shipped. Anything not built says "not yet"
   (reminders, sharing with a household, syncing between devices).
 - No invented numbers and no testimonials until real users have given a quote and permission to
@@ -56,8 +58,6 @@ issues, nothing scrolls sideways, no console errors, and "Open Sincewhen" lands 
 - **Where should it live?** `/about` for now. Options: keep it there and share that link; make
   `/` show it to first-time browser visitors (not installed, no data) while installed apps and
   returning users go straight to the app; or give it its own domain later.
-- **Spelling.** The app and this page use British spelling (colour, organised). For a mostly
-  American audience, switch both to American (color, organized) in one pass.
 - **Logo.** The three status dots beside the name are a placeholder, like the app icon.
 - **Sharing preview.** There is no Open Graph image yet, so a shared link shows no picture.
 - **Offline.** `/about` is not in the service worker's page list, so offline it falls back to the

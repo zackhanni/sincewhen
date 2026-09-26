@@ -52,8 +52,8 @@ function TaskRow({ view, hasChildren, location }: NodeRowProps) {
   const timing = view.timing!;
   const completeTask = useCompleteTask();
   const isSevere = timing.status === "severe";
-  // The usual grey is only about 4.3:1 on a long-neglected row's pale-red background, under
-  // the 4.5:1 minimum for small text, so those rows use a darker grey.
+  // The usual gray is only about 4.3:1 on a long-neglected row's pale-red background, under
+  // the 4.5:1 minimum for small text, so those rows use a darker gray.
   const secondaryText = isSevere ? "text-neutral-600 dark:text-neutral-300" : "text-muted-foreground";
 
   return (

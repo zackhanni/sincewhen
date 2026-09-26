@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Sincewhen
 
-Recurring tasks that come due based on when they were last completed, organised as
+Recurring tasks that come due based on when they were last completed, organized as
 locations > rooms > tasks > sub-tasks. Client-only for now: data lives on the device.
 
 ## Read first
@@ -33,7 +33,7 @@ locations > rooms > tasks > sub-tasks. Client-only for now: data lives on the de
 - Dates are local calendar dates (`YYYY-MM-DD`). Never call `new Date()` on a bare date string;
   use the helpers in `lib/core`.
 - Never edit `components/ui/*`. Wrap or re-theme instead, so shadcn updates stay safe.
-- Tunable thresholds (status, room colour, depth limit) live in one constants file.
+- Tunable thresholds (status, room color, depth limit) live in one constants file.
 - Keep explanatory "why" comments; write so the purpose is obvious on first read.
 
 ## Commands

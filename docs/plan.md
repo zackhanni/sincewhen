@@ -11,7 +11,7 @@ due that long after you **last completed it**, and stays at the top of its list 
 acknowledge it. It is not a calendar reminder: if you complete a 2-month task three weeks late,
 the next due date is 2 months after the day you actually did it.
 
-Tasks are organised like folders: locations (Home, Work, a parent's house) or categories
+Tasks are organized like folders: locations (Home, Work, a parent's house) or categories
 (Cleaning, Exercise) contain rooms or more folders, and any task can be broken into sub-tasks.
 Because the top level is not always a place, the screens say "location or category" and the
 tab is called Folders; the code still says `location` and `/rooms`.
@@ -41,7 +41,7 @@ type TaskNode = {   // not `Node`: that name is already a DOM global
 - **Depth limit: 5 levels**, enforced on create and on move.
 - **`sortOrder` is a fractional-indexing string from day one** so that adding drag-to-reorder
   later needs no migration, and a reorder writes one row instead of renumbering siblings.
-  Manual order applies to locations, to folders (as the tie-break after colour score) and to
+  Manual order applies to locations, to folders (as the tie-break after color score) and to
   sub-tasks. It does **not** apply to tasks in a room: those always sort by urgency, which is
   the core feature.
 - A **completion log** (`{ nodeId, date, batchId }[]`) is kept alongside the nodes. It powers undo now
@@ -71,7 +71,7 @@ Tasks sort by progress, highest first. A ratio is used rather than raw days over
 daily task 2 days late is worse than an air filter 5 days late. All thresholds are constants in
 one file so they can be tuned without touching logic.
 
-## Room colour
+## Room color
 
 Based on a **count** of overdue items, not a percentage — a room with 1 of 1 overdue should not
 look worse than a room with 3 of 10 overdue.
@@ -111,7 +111,7 @@ look worse than a room with 3 of 10 overdue.
   left edge (`swipe-back.tsx`). That app has no back gesture of its own; a Safari tab and
   Android do, so the swipe is off there, or both would fire. The browser's own back (and
   Android's) still follows history. The breadcrumb jumps further up.
-- **The app opens on Folders or Due**, chosen in Settings (Folders by default: the colour
+- **The app opens on Folders or Due**, chosen in Settings (Folders by default: the color
   overview shows which place or category needs work; being tested with other users). `/` is a
   launcher that shows nothing and replaces itself with the chosen screen (`app/page.tsx`); it is
   the manifest's `start_url`, so every installed icon goes through it. The tabs have their own
@@ -158,7 +158,7 @@ different sizes, so they are not part of `AppData`.
   on a phone, or a QR code to the phone on a computer with a mouse, and on an empty app it ends
   with "Start with examples" / "Start empty".
 - The examples (`lib/core/examples.ts`) are common chores, dated relative to the day they are
-  added so every colour shows on any day. They are ordinary items, meant to be kept or edited.
+  added so every color shows on any day. They are ordinary items, meant to be kept or edited.
   The store only adds them to an empty app.
 - Settings shows a version: the date of the commit being built (`2026.9.26`), set in
   `next.config.ts`, so it never needs bumping by hand.
@@ -200,7 +200,7 @@ the persistent-storage request, the icon badge and the installed check.
 ## Code layout
 
 `lib/core` holds all the rules as pure functions with tests: `dates`, `status`, `tree`,
-`summary` (room colour, display order, Due list), `operations` (add / edit / move / duplicate /
+`summary` (room color, display order, Due list), `operations` (add / edit / move / duplicate /
 delete), `complete`, `validate`, `examples`. Import from `@/lib/core` only. Each operation takes the saved
 data and returns a new copy; a refused operation throws a `CoreError` with a `code`.
 

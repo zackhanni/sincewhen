@@ -24,7 +24,7 @@ function requireNode(index: TreeIndex, id: string): TaskNode {
 
 /**
  * Refuses a node that breaks the saved-data rules (empty or over-long name, a frequency of 0, a
- * date that does not exist). The forms check these too, but this is the last line of defence:
+ * date that does not exist). The forms check these too, but this is the last line of defense:
  * one invalid node written to storage makes parseAppData reject the WHOLE file on next launch.
  */
 function assertValidNode(node: TaskNode): void {

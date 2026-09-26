@@ -129,7 +129,7 @@ frequency, so going back to the original unit restores the original number.
 ### Dated examples must work on every day, not just today
 The examples are dated "N days ago", and whether 35 days ago is overdue for a monthly task
 depends on how long the month was. `examples.test.ts` builds them for every day of two years
-(one a leap year) and checks every colour appears. It was seen to fail when one date was moved.
+(one a leap year) and checks every color appears. It was seen to fail when one date was moved.
 
 ### A `YYYY-MM-DD` regex is a shape check, not a validity check
 It accepts `2026-02-30`, which `Date` silently rolls to March 2. Validate by constructing the
@@ -172,8 +172,8 @@ turns yellow the instant it is checked off.
 ## Accessibility
 
 ### An empty app passes contrast checks that a used one fails
-The coloured rows and room badges only appear once tasks are overdue, so Lighthouse on a fresh
-install scores 100 while the same screens with data scored 96: grey secondary text on a
+The colored rows and room badges only appear once tasks are overdue, so Lighthouse on a fresh
+install scores 100 while the same screens with data scored 96: gray secondary text on a
 long-neglected row's pale-red background (4.33:1) and white on the orange and red room badges
 (about 2.8:1 and 3.8:1), all under the 4.5:1 minimum for small text. Fixed in
 `lib/status-styles.ts` and `components/app/node-row.tsx`. Measure accessibility with made-up
@@ -181,9 +181,9 @@ tasks loaded (seed `localStorage["sincewhen"]` in a throwaway browser profile, t
 Lighthouse against that browser with `--disable-storage-reset`), including a long-overdue task
 and rooms at every badge level.
 
-### A colour that passes in light mode can fail in dark
+### A color that passes in light mode can fail in dark
 `text-yellow-700` is fine on a white card and unreadable on a near-black one. Every hard-coded
-text colour needs a `dark:` partner (see `lib/status-styles.ts`). Checked with axe-core in
+text color needs a `dark:` partner (see `lib/status-styles.ts`). Checked with axe-core in
 Playwright on every screen in both themes and both sizes, with data covering every status and
 room level; a control run with the old yellow on a dark card was flagged, so the zero is real.
 
@@ -240,14 +240,14 @@ A browser test that loads a page must seed `localStorage["sincewhen:intro-dismis
 close the intro first. `page.goto` counts as a new launch; clicking a tab does not.
 
 ### Tailwind cannot see class names built from pieces
-`border-${colour}-500` is never generated. `lib/status-styles.ts` writes every class in full.
+`border-${color}-500` is never generated. `lib/status-styles.ts` writes every class in full.
 
 ## Tooling
 
 ### CodeRabbit silently skips stacked PRs, and its check still says "pass"
 It reviews only PRs whose base is the default branch. PRs #3-#5 reported "Review skipped: reviews
 are disabled for this base branch" and #2 "Review rate limited" — all with a green check and zero
-comments, which looks exactly like a clean review. Read the check's description, not its colour.
+comments, which looks exactly like a clean review. Read the check's description, not its color.
 A stacked PR gets reviewed only after the one below merges and it is retargeted; then comment
 `@coderabbitai review`. The plan allows 3 reviews per hour, re-reviews included.
 
@@ -262,6 +262,13 @@ It set `--font-sans: var(--font-sans)` in `globals.css`, which resolves to nothi
 app silently fell back to a serif font. It must point at the variable `next/font` defines:
 `--font-sans: var(--font-geist-sans)`. Only a screenshot revealed it — typecheck, lint and tests
 were all green.
+
+### A link styled as a button needs `cn(buttonVariants(...))`
+`buttonVariants` returns the base style's `border-transparent` and the outline style's
+`border-border` together, and in the generated CSS the transparent one wins. A `<Link>` given
+the bare string had no border in light mode and looked like plain text (the white background
+matches the card). `Button` runs its classes through `cn`, which drops the losing one; a link
+must do the same: `className={cn(buttonVariants({ variant: "outline" }))}`.
 
 ### Remove shadcn components you do not use
 `shadcn add` is cheap, so unused files pile up. Six were added and deleted in Phase 3. Native

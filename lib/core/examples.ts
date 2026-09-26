@@ -10,7 +10,7 @@ import type { AppData, Frequency, TaskNode } from "./types";
 // "Last done" is given as days before the day the examples are added, not as fixed dates, so on
 // any day there is always a task just done, some fine (green), some due soon (yellow), some
 // overdue (red) and one long overdue (red with "!"). The margins are wide enough that month
-// lengths never tip a task into another colour; examples.test.ts checks every day of two years.
+// lengths never tip a task into another color; examples.test.ts checks every day of two years.
 // Once added they are ordinary items and age like any other task.
 
 type Example = {

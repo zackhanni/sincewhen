@@ -1,4 +1,4 @@
-// Every tunable number in the app lives here, so behaviour can be adjusted without touching logic.
+// Every tunable number in the app lives here, so behavior can be adjusted without touching logic.
 
 /** Bumped whenever the saved data shape changes; the store migrates older versions forward. */
 export const SCHEMA_VERSION = 1;
@@ -22,7 +22,7 @@ export const SEVERE_OVERDUE_RATIO = 0.5;
 /** ...and by at least this many days, so a daily task is not severe after 12 hours. */
 export const SEVERE_MIN_DAYS = 3;
 
-// --- Room colour -------------------------------------------------------------------------------
+// --- Room color -------------------------------------------------------------------------------
 // score = number of overdue tasks inside the room, with a severe task counting double.
 
 export const SEVERE_WEIGHT = 2;

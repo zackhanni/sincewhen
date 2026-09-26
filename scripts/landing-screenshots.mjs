@@ -1,7 +1,7 @@
 // Makes the phone screenshots on the landing page (public/landing/*.png), in light and dark.
 //
 // It drives the real app: an empty app, "Start with examples", then the Folders, Home and Due
-// screens. The examples are dated relative to today, so the colours always look the same.
+// screens. The examples are dated relative to today, so the colors always look the same.
 //
 // Needs Playwright, which is not a dependency of the app. To run:
 //   pnpm build && pnpm start --port 3462            (a production build: no dev overlay)

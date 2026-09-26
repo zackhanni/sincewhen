@@ -56,10 +56,10 @@ export function SwipeBack({ href }: { href: string }) {
     };
     const onEnd = (event: TouchEvent) => {
       if (!start) return;
-      const travelled = event.changedTouches[0].clientX - start.x;
+      const traveled = event.changedTouches[0].clientX - start.x;
       const wasSwipe = isSwipe;
       reset();
-      if (wasSwipe && travelled >= TRIGGER_DISTANCE) goBack();
+      if (wasSwipe && traveled >= TRIGGER_DISTANCE) goBack();
     };
 
     // Passive: the page keeps scrolling normally; this only watches.

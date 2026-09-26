@@ -46,12 +46,12 @@ frequency. It comes due that long after the day you last actually did it, rises 
 its list, and stays there — for days or weeks if need be — until you check it off. Then the clock
 restarts from that day.
 
-- **Organised like folders.** Locations (Home, Work, a parent's house) hold rooms, rooms hold
+- **Organized like folders.** Locations (Home, Work, a parent's house) hold rooms, rooms hold
   tasks and sub-rooms, and any task can be broken into sub-tasks. The same chore can have a
   different frequency in each room: the main bathroom monthly, the guest bathroom quarterly.
 - **Urgency is relative, not absolute.** Tasks are ranked by how far through their own interval
   they are. A daily task two days late outranks a yearly task two weeks late.
-- **Colour tells you where to look.** Tasks go green, yellow, red, then a red border and "!"
+- **Color tells you where to look.** Tasks go green, yellow, red, then a red border and "!"
   when badly neglected. Rooms roll their contents up into green, yellow, orange, red and dark
   red, with a count of what is overdue inside, so the worst room is obvious at a glance.
 - **A "Due" screen across everything.** One flat list of what needs attention in every room,
@@ -79,7 +79,7 @@ files first (see "Screenshots to capture" below) and adjust `externalLink` once 
     cardDescription:
       "A chore tracker built around time-since-last-done instead of calendar dates. Works offline, installs to the home screen, and keeps all data on the device.",
     fullDescription:
-      "Sincewhen is a progressive web app for recurring upkeep: changing filters, cleaning rooms, servicing equipment. Instead of fixed calendar reminders, each task comes due a set interval after it was last actually completed, then stays at the top of the list until it is done. Tasks are organised into locations, rooms and sub-tasks, and colour-coded by urgency so the most neglected room stands out. It runs entirely in the browser with no account or server, works offline, and moves between devices through a backup file shared from the phone's share sheet.",
+      "Sincewhen is a progressive web app for recurring upkeep: changing filters, cleaning rooms, servicing equipment. Instead of fixed calendar reminders, each task comes due a set interval after it was last actually completed, then stays at the top of the list until it is done. Tasks are organized into locations, rooms and sub-tasks, and color-coded by urgency so the most neglected room stands out. It runs entirely in the browser with no account or server, works offline, and moves between devices through a backup file shared from the phone's share sheet.",
     categories: [PortfolioCategory.App, PortfolioCategory.Mvp],
     technologies: [
       "Next.js",
@@ -105,14 +105,14 @@ files first (see "Screenshots to capture" below) and adjust `externalLink` once 
     mobileAvailable: true,
     challenges: [
       "Calendar-style reminders fit upkeep badly: a task done late should restart its clock from the day it was done, and '2 months' is not 60 days. Dates also had to survive time zones and daylight saving without shifting by a day.",
-      "Ranking had to be fair across very different tasks. Sorting by days overdue buries a neglected daily task under a slightly late yearly one, and colouring rooms by percentage makes a room with one overdue task look worse than a room with three.",
+      "Ranking had to be fair across very different tasks. Sorting by days overdue buries a neglected daily task under a slightly late yearly one, and coloring rooms by percentage makes a room with one overdue task look worse than a room with three.",
       "With no server, the browser is the database. Safari deletes a site's data after 7 days without a visit, storage can fail or be corrupted, and one bad record could make the whole save file unreadable.",
       "The app had to open and work with no network, including pages the user had never visited, and keep working across deployments without piling up old cached files.",
       "Nested data gets awkward on a phone: folders within folders, tasks that are also folders, and moving or duplicating whole branches without breaking the tree.",
     ],
     solutions: [
-      "Modelled time as local calendar dates with calendar arithmetic, never timestamps or day counts. A task's urgency is elapsed time divided by its own interval, which makes every frequency comparable.",
-      "Rooms are coloured by a count of overdue tasks (a badly neglected task counts double, and a parent task counts once for its sub-tasks), and one function feeds both the room badge and the Due list so they can never disagree.",
+      "Modeled time as local calendar dates with calendar arithmetic, never timestamps or day counts. A task's urgency is elapsed time divided by its own interval, which makes every frequency comparable.",
+      "Rooms are colored by a count of overdue tasks (a badly neglected task counts double, and a parent task counts once for its sub-tasks), and one function feeds both the room badge and the Due list so they can never disagree.",
       "Treated saved data as untrusted input: every load and every import passes the same schema and tree-integrity checks, every write is validated before it is stored, and unreadable data is preserved and surfaced to the user instead of being silently overwritten.",
       "Wrote a small, readable service worker: pages are network-first, hashed build files are cache-first, and each deployment gets its own cache that replaces the previous one only after it is complete. Every route is static, with the item id in the query string, so one cached page serves every item offline.",
       "Stored the tree as a flat list of nodes linked by parent id, with fractional-index sort keys. Moving an item is a one-field change, the picker offers only legal destinations, and the structure maps directly onto database rows for a future sync layer.",
@@ -148,7 +148,7 @@ Save under `web-wizard-dev-v2/public/portfolio_images/sincewhen/`.
 | --- | --- | --- |
 | `due-screen.png` | Due tab | A severe task with the "!" on top, a few red and yellow below, room paths visible, location chips |
 | `room-screen.png` | A room | Tasks sorted by urgency above sub-rooms, breadcrumb, at least one orange or red sub-room badge |
-| `rooms-overview.png` | Folders tab | Several locations or rooms in different colours, including a dark red one |
+| `rooms-overview.png` | Folders tab | Several locations or rooms in different colors, including a dark red one |
 | `add-task.png` | Add form | Name, "every 2 months", the "last done" choices |
 | `settings-backup.png` | Settings | The share and save backup buttons, last-backup line |
 
@@ -173,10 +173,10 @@ rules first; several require a flair or a specific day.
 >
 > What it does:
 >
-> - Organise by location > room > task > sub-task (folders within folders)
+> - Organize by location > room > task > sub-task (folders within folders)
 > - Tasks are ranked by how overdue they are *relative to their own frequency*, so a daily task
 >   2 days late beats a yearly one 2 weeks late
-> - Rooms change colour (green to dark red) with a count of what is overdue inside
+> - Rooms change color (green to dark red) with a count of what is overdue inside
 > - One "Due" screen across every room
 > - Completing a parent task completes the sub-tasks that were due, and leaves the rest alone
 > - Works offline and installs to your home screen
@@ -190,7 +190,7 @@ rules first; several require a flair or a specific day.
 >
 > I would love feedback on:
 >
-> 1. Do the colours and ordering match your sense of what is urgent? (A task turns yellow at 80%
+> 1. Do the colors and ordering match your sense of what is urgent? (A task turns yellow at 80%
 >    of its interval and "severe" once it is overdue by half its interval.)
 > 2. Is folders-within-folders clear, or is it too much?
 > 3. What is missing for you? I am weighing snooze, drag-to-reorder, dark mode, and optional
@@ -217,6 +217,6 @@ not calendar dates. Rooms turn red as they get neglected. Offline, installable, 
 data stays on your phone.
 
 **Two sentences:** Sincewhen tracks recurring upkeep by how long it has been since each task was
-last done, so a task finished late simply restarts its clock. It organises tasks by room,
-colour-codes what is most neglected, works offline as an installable app, and keeps all data on
+last done, so a task finished late simply restarts its clock. It organizes tasks by room,
+color-codes what is most neglected, works offline as an installable app, and keeps all data on
 the device.

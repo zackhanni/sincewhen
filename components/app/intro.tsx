@@ -67,7 +67,7 @@ const subscribeToNothing = () => () => {};
 
 type Page = { title: string; body: ReactNode };
 
-/** A task row as it looks in the app, reduced to what the colour lesson needs. */
+/** A task row as it looks in the app, reduced to what the color lesson needs. */
 function SampleTask({ status, due, name }: { status: keyof typeof TASK_BAR; due: string; name: string }) {
   return (
     <div className={cn("flex items-center gap-3 rounded-lg border border-l-4 bg-card px-3 py-2", TASK_BAR[status])}>
@@ -146,22 +146,22 @@ function buildPages({ onDesktop, installed }: { onDesktop: boolean; installed: b
             </span>
             Wash the sheets &middot; <span className="text-muted-foreground">due in 2 weeks</span>
           </p>
-          <p>Every check-off is recorded, and a tap by mistake can be undone straight away.</p>
+          <p>Every check-off is recorded, and a tap by mistake can be undone right away.</p>
         </>
       ),
     },
     {
-      title: "Colours show what needs doing",
+      title: "Colors show what needs doing",
       body: (
         <>
-          <p>Each task changes colour on its own schedule:</p>
+          <p>Each task changes color on its own schedule:</p>
           <div className="flex flex-col gap-1.5">
             <SampleTask status="ok" name="Oil change" due="Due in 4 months" />
             <SampleTask status="soon" name="Wash the sheets" due="Due in 2 days" />
             <SampleTask status="due" name="Test the smoke detectors" due="Overdue 5 days" />
             <SampleTask status="severe" name="Clean the fridge" due="Overdue 2 months" />
           </div>
-          <p>A folder takes its colour from how many things inside it are overdue:</p>
+          <p>A folder takes its color from how many things inside it are overdue:</p>
           <div className="flex flex-col gap-1.5">
             <SampleFolder level="green" name="Car" />
             <SampleFolder level="orange" name="Kitchen" overdue={2} />

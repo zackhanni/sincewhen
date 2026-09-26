@@ -26,7 +26,7 @@ import {
 export const metadata: Metadata = {
   title: "Sincewhen: for the things you do every so often",
   description:
-    "A free app for recurring chores. Each task comes due a set time after you last did it, and colours show what needs doing. No account, works offline.",
+    "A free app for recurring chores. Each task comes due a set time after you last did it, and colors show what needs doing. No account, works offline.",
   openGraph: {
     title: "Sincewhen: for the things you do every so often",
     description: "Recurring chores that come due based on when you last did them. Free, private, works offline.",

@@ -25,9 +25,9 @@ next phase may branch from an unmerged phase, but never further than that.
 
 ## Phase 3 — UI
 
-- [x] Rooms view: drill-in, breadcrumb, coloured cards, badges
+- [x] Rooms view: drill-in, breadcrumb, colored cards, badges
 - [x] Location filter (chips on the Due tab; shown once there are two locations)
-- [x] Task row: colour, due text, one-tap complete, severe "!" mark
+- [x] Task row: color, due text, one-tap complete, severe "!" mark
 - [x] Item menu (drawer): edit, frequency, move, duplicate, add sub-task, delete with confirm
 - [x] Add / edit form (TanStack Form) with frequency picker and "last done"
 - [x] Due tab
@@ -52,7 +52,7 @@ next phase may branch from an unmerged phase, but never further than that.
       so back up on the old address and restore on the new one.
 - [ ] Old address redirects to the new one: `next.config.ts` sends `sincewhen-ruby.vercel.app`
       to `sincewhen.webwizarddev.com` (307) on branch `launch-prep`. Deploys when merged.
-- [x] Small-text contrast with tasks loaded: grey text on long-overdue rows and the orange and
+- [x] Small-text contrast with tasks loaded: gray text on long-overdue rows and the orange and
       red room badges were under 4.5:1. Lighthouse accessibility 96 → 100 on the 3 affected
       screens (local production build with sample tasks, 2026-09-25; branch `launch-prep`).
       Re-measure on the live site after it deploys.
@@ -88,8 +88,8 @@ checked in a headless browser and with axe-core; the items under "Still to check
 - [x] **Wide screens.** From 640px the page widens to 64rem and lists become a grid of 20rem
       columns (one on a phone, two on a fold or iPad, three on a desktop; fewer with Large).
 - [x] **Theme: Match device / Light / Dark**, Match device by default, following the device live
-      while open. Dark versions of every hard-coded colour; no white flash on launch (head
-      script); browser bar colour follows. axe-core: 0 WCAG A/AA issues on every screen, both
+      while open. Dark versions of every hard-coded color; no white flash on launch (head
+      script); browser bar color follows. axe-core: 0 WCAG A/AA issues on every screen, both
       themes, both sizes.
 - [x] **Interface size: Default / Large** (125%, everything scales). Saved per device.
 - [x] **Export: "Include display settings" checkbox.** Import applies them and says so in the
@@ -99,12 +99,12 @@ checked in a headless browser and with axe-core; the items under "Still to check
       from the saved value: 2 weeks → 14 days, 2 months → 61 days).
 - [x] **Install steps** in one component, used by the install hint (now folded behind "Show me
       how"), Settings and the intro: iOS 26 Safari path, Android, and "open in Safari" for Brave.
-- [x] **Intro for first-time users**: 6 pages (welcome, folders, check-off, colours, free,
+- [x] **Intro for first-time users**: 6 pages (welcome, folders, check-off, colors, free,
       private and offline, then install on a phone or the QR code on a desktop). "Don't show this again";
       reading to the end also counts; Settings > About > "Show the intro".
 - [x] **Desktop QR code** (`public/qr-code.svg`, decodes to the live address; see pwa.md to remake).
 - [x] **Example setup**: "Start with examples" at the end of the intro and on both empty
-      screens. Dates relative to today, every colour shows on any day (tested over two years).
+      screens. Dates relative to today, every color shows on any day (tested over two years).
 - [x] **Version in Settings > About**: the date of the built commit plus its short hash, set
       automatically in `next.config.ts`.
 
@@ -144,7 +144,7 @@ A promotional page at `/about`, first draft 2026-09-26. Details and open questio
 - [x] Real screenshots of the app from the example setup (`scripts/landing-screenshots.mjs`).
 - [x] Linked from Settings > About.
 - [ ] Decide where it lives: `/about`, the front door for first-time visitors, or its own domain.
-- [ ] British or American spelling, across the app and the page.
+- [x] American spelling and phrasing, across the app, the page and the docs (2026-09-26).
 - [ ] Design pass (Claude Design), a real logo, an Open Graph image.
 - [ ] Testimonials, once testers have given quotes and permission.
 

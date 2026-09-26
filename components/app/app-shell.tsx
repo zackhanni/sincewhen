@@ -100,7 +100,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </Suspense>
       {/* Above the tab bar, so the Undo button is never hidden behind it. */}
       <Intro />
-      {/* The toast colours follow the app's own choice, not only the device's. */}
+      {/* The toast colors follow the app's own choice, not only the device's. */}
       <Toaster position="top-center" theme={theme} />
     </SheetProvider>
   );

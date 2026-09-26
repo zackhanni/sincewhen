@@ -1,11 +1,11 @@
 import type { RoomLevel, TaskStatus } from "@/lib/core";
 
-// The colour language of the app, in one place. Class names are written out in full (never
+// The color language of the app, in one place. Class names are written out in full (never
 // built from pieces) because Tailwind only generates the classes it can find as whole strings.
-// Every text colour has a `dark:` partner: a shade that reads on light cards is too dim on the
+// Every text color has a `dark:` partner: a shade that reads on light cards is too dim on the
 // near-black ones, so dark mode uses lighter shades of the same hue.
 
-/** The coloured bar down the left edge of a task row. */
+/** The colored bar down the left edge of a task row. */
 export const TASK_BAR: Record<TaskStatus, string> = {
   ok: "border-l-green-500",
   soon: "border-l-yellow-400",
@@ -32,7 +32,7 @@ export const ROOM_BORDER: Record<RoomLevel, string> = {
 /**
  * The overdue-count badge on a room card. Every pair needs 4.5:1 contrast (WCAG AA for small
  * text): white on orange-500 is only about 2.8:1 and white on red-500 about 3.8:1, so orange
- * keeps its colour with dark text, and red is one shade darker.
+ * keeps its color with dark text, and red is one shade darker.
  */
 export const ROOM_BADGE: Record<RoomLevel, string> = {
   green: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",

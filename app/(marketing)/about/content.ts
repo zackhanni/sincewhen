@@ -44,7 +44,7 @@ export const problems = {
   items: [
     {
       title: "You can't remember when you last did it",
-      body: "Was the smoke detector test last month, or last spring? Jobs that come round every few weeks or months are the easiest to lose track of.",
+      body: "Was the smoke detector test last month, or last spring? Jobs that come around every few weeks or months are the easiest to lose track of.",
     },
     {
       title: "Calendar reminders don't fit",
@@ -70,7 +70,7 @@ export const steps = {
       body: "One tap. The clock restarts from that day, so doing something late never leaves you behind.",
     },
     {
-      title: "Let the colours guide you",
+      title: "Let the colors guide you",
       body: "Tasks go from green to yellow to red as they come due. Folders turn red as overdue work piles up inside them, so you can see where to start.",
     },
   ],
@@ -84,7 +84,7 @@ export const screens = {
       image: "folders",
       alt: "The Folders screen: Home in red with 2 overdue, Car in green, Personal in yellow",
       title: "Every place at a glance",
-      body: "Each location or category takes its colour from what is overdue inside it.",
+      body: "Each location or category takes its color from what is overdue inside it.",
     },
     {
       image: "room",
@@ -109,7 +109,7 @@ export const features: { id: string; title: string; items: Feature[] } = {
   items: [
     {
       icon: FolderTreeIcon,
-      title: "Organised like folders",
+      title: "Organized like folders",
       body: "Locations, categories, rooms and sub-tasks, up to five levels deep.",
     },
     {
@@ -120,12 +120,12 @@ export const features: { id: string; title: string; items: Feature[] } = {
     {
       icon: ListTreeIcon,
       title: "Big jobs, small steps",
-      body: "Break “clean the bathroom” into steps. Tick them off one by one, or the whole job at once.",
+      body: "Break “clean the bathroom” into steps. Check them off one by one, or the whole job at once.",
     },
     {
       icon: RotateCcwIcon,
       title: "Undo a mis-tap",
-      body: "Every check-off can be undone straight away.",
+      body: "Every check-off can be undone right away.",
     },
     {
       icon: WifiOffIcon,
@@ -161,11 +161,11 @@ export const features: { id: string; title: string; items: Feature[] } = {
 };
 
 export const useCases: { title: string; subtitle: string; items: Feature[] } = {
-  title: "Made for the jobs that come round again",
+  title: "Made for the jobs that come around again",
   subtitle: "Start with a set of common chores, or build your own from scratch.",
   items: [
     { icon: HouseIcon, title: "Home", body: "Replace the HVAC filter · Test the smoke detectors · Clear the gutters" },
-    { icon: SprayCanIcon, title: "Cleaning", body: "Clean the fridge · Wash the sheets · Descale the kettle" },
+    { icon: SprayCanIcon, title: "Cleaning", body: "Clean the fridge · Wash the sheets · Descale the coffee maker" },
     { icon: CarIcon, title: "Car", body: "Oil change · Check the tire pressure · Rotate the tires" },
     { icon: LeafIcon, title: "Garden and plants", body: "Water the ferns · Feed the lawn · Repot the houseplants" },
     { icon: PawPrintIcon, title: "Pets", body: "Flea treatment · Wash the dog bed · Vet checkup" },
@@ -222,7 +222,7 @@ export const faqs = {
     {
       question: "Does it send reminders?",
       answer:
-        "Not yet. Open it to see what is due, and the colours do the rest. Notifications are on the list for a later version.",
+        "Not yet. Open it to see what is due, and the colors do the rest. Notifications are on the list for a later version.",
     },
     {
       question: "Can I share chores with my household?",

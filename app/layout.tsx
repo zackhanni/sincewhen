@@ -27,7 +27,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  // The browser bar colour. Light here; switched to dark on the device by applyDisplaySettings.
+  // The browser bar color. Light here; switched to dark on the device by applyDisplaySettings.
   themeColor: "#ffffff",
 };
 

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRef, useState, useSyncExternalStore, type ChangeEvent, type ReactNode } from "react";
 import { DownloadIcon, Share2Icon, UploadIcon } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { backupFileName, buildBackupText, readBackupText, summarizeData, type BackupReadResult } from "@/lib/backup/backup";
 import { downloadTextFile, makeShareableFile, shareFile } from "@/lib/backup/send-file";
 import { daysBetween } from "@/lib/core";
@@ -22,13 +22,14 @@ import { isInstalled, requestPersistentStorage } from "@/lib/pwa/pwa";
 import { showError } from "@/lib/show-error";
 import { CORRUPT_BACKUP_KEY } from "@/lib/store/app-store";
 import { appStore, useAppStore } from "@/lib/store/use-app-store";
+import { cn } from "@/lib/utils";
 import { InstallSteps } from "./install-steps";
 import { openIntro } from "./intro";
 
 /** Where the data being replaced by an import is parked, in case the import was a mistake. */
 const BEFORE_IMPORT_KEY = "sincewhen:before-import";
 
-const subscribeToNothing = () => () => {};
+const subscribeToNothing = () => () => { };
 
 function readStorage(key: string): string | null {
   try {
@@ -356,11 +357,13 @@ export function SettingsScreen() {
           Free, with no account, no ads and no tracking. Your tasks stay on this device.
         </p>
         <Button size="lg" variant="outline" onClick={openIntro}>
-          Show the intro
+          Show the intro tutorial
         </Button>
-        {/* The public page about the app, handy for telling someone else about it. */}
-        <Link href="/about" className="text-sm underline underline-offset-4">
-          About Sincewhen (to share with others)
+        {/* The public page about the app, handy for telling someone else about it. Styled like
+            the button above so it reads as something to tap, not small print. `cn` is needed:
+            it drops the base style's transparent border in favor of the outline one. */}
+        <Link href="/about" className={cn(buttonVariants({ variant: "outline", size: "lg" }))}>
+          Software product landing page
         </Link>
       </Section>
     </div>
