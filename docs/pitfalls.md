@@ -45,6 +45,15 @@ Without one the production build fails, because the page can no longer be preren
 `tsc` reported a missing `app/rooms/[id]/page.js` after the folder was deleted. `pnpm build`
 (or `pnpm dev`) regenerates the types; the error is not in the source.
 
+A running `pnpm dev` keeps its own copy in `.next/dev/types`, and `tsc` and `pnpm build` read it
+too. After routes moved into the `(app)` group, a dev server that was already running never
+rewrote it, and the build failed on `app/rooms/page.js`. Restart the dev server after moving or
+deleting a route (or move `.next/dev/types/validator.ts` aside; it is generated).
+
+### A production server does not serve files added to `public/` after it started
+`next start` reads `public/` once. Screenshots saved there afterwards answered 404, and
+`next/image` reported "The requested resource isn't a valid image" (400). Restart the server.
+
 ### A page cannot tell whether a download was kept
 `downloadTextFile` fires and forgets, so "Save backup file" marks the backup as done the moment
 it starts. Sharing is different: `navigator.share` rejects with `AbortError` when the sheet is

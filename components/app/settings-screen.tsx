@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRef, useState, useSyncExternalStore, type ChangeEvent, type ReactNode } from "react";
 import { DownloadIcon, Share2Icon, UploadIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -357,6 +358,10 @@ export function SettingsScreen() {
         <Button size="lg" variant="outline" onClick={openIntro}>
           Show the intro
         </Button>
+        {/* The public page about the app, handy for telling someone else about it. */}
+        <Link href="/about" className="text-sm underline underline-offset-4">
+          About Sincewhen (to share with others)
+        </Link>
       </Section>
     </div>
   );

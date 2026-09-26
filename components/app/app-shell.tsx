@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Suspense, useEffect, useLayoutEffect, type ReactNode } from "react";
+import { Suspense, useEffect, type ReactNode } from "react";
 import { FolderTreeIcon, ListChecksIcon, SettingsIcon } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { isOverdue, listAttentionItems } from "@/lib/core";
-import { applyDisplaySettings, followSystemTheme, getDisplaySettings } from "@/lib/display/display-settings";
 import { useDisplaySettings } from "@/lib/hooks/use-display-settings";
 import { useToday } from "@/lib/hooks/use-today";
 import { useTreeIndex } from "@/lib/hooks/use-tree-index";
@@ -30,14 +29,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   const loadError = useAppStore((state) => state.loadError);
   const hasUnreadableBackup = useAppStore((state) => state.hasUnreadableBackup);
   const { theme } = useDisplaySettings();
-
-  // The script in layout.tsx already applied the theme and size. Doing it again here matters in
-  // development only: React's Strict Mode remount resets <html> to its JSX attributes, wiping
-  // what the script set. A layout effect runs before paint, so nothing flashes.
-  useLayoutEffect(() => {
-    applyDisplaySettings(getDisplaySettings());
-    return followSystemTheme();
-  }, []);
 
   // Saved data is read here, after the first render, because the server has no device storage
   // to read from. See `skipHydration` in app-store.ts.

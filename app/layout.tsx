@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { AppShell } from "@/components/app/app-shell";
+import { DisplaySettingsSync } from "@/components/app/display-settings-sync";
 import { DISPLAY_SETTINGS_SCRIPT } from "@/lib/display/display-settings";
 import "./globals.css";
 
@@ -44,8 +44,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/* Applies this device's theme and size before the first paint: no white flash in dark mode. */}
         <script dangerouslySetInnerHTML={{ __html: DISPLAY_SETTINGS_SCRIPT }} />
       </head>
+      {/* The app's tab bar and data live in app/(app)/layout.tsx; the landing page in (marketing). */}
       <body className="min-h-full flex flex-col">
-        <AppShell>{children}</AppShell>
+        <DisplaySettingsSync />
+        {children}
       </body>
     </html>
   );

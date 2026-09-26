@@ -204,6 +204,10 @@ the persistent-storage request, the icon badge and the installed check.
 delete), `complete`, `validate`, `examples`. Import from `@/lib/core` only. Each operation takes the saved
 data and returns a new copy; a refused operation throws a `CoreError` with a `code`.
 
+`app/` is split into route groups: `(app)` holds the app's pages and its layout (the tab bar,
+saved data, intro), `(marketing)` holds the landing page (`/about`, see landing-page.md). The
+root layout has only what both share.
+
 `lib/store` wraps core in a zustand store (`app-store.ts` is framework-free and tested;
 `use-app-store.ts` binds it to React and localStorage). `components/app` holds the screens:
 `app-shell` (loading, tab bar), `due-screen`, `node-screen`, `node-row`, and one shared bottom

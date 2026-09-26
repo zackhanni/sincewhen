@@ -134,6 +134,20 @@ checked in a headless browser and with axe-core; the items under "Still to check
 - [ ] On the live site: which date the version shows (git or build-date fallback, see pwa.md).
 - [ ] Edit the example list in `lib/core/examples.ts` if it should differ.
 
+## Landing page (branch `landing-page`)
+
+A promotional page at `/about`, first draft 2026-09-26. Details and open questions are in
+[landing-page.md](landing-page.md).
+
+- [x] Content for every section, in `app/(marketing)/about/content.ts`.
+- [x] A plain layout, phone to desktop, light and dark (axe-core: no issues).
+- [x] Real screenshots of the app from the example setup (`scripts/landing-screenshots.mjs`).
+- [x] Linked from Settings > About.
+- [ ] Decide where it lives: `/about`, the front door for first-time visitors, or its own domain.
+- [ ] British or American spelling, across the app and the page.
+- [ ] Design pass (Claude Design), a real logo, an Open Graph image.
+- [ ] Testimonials, once testers have given quotes and permission.
+
 ## Future additions (not v1)
 
 - **Sharing.** Share the whole account, or only chosen rooms, with another person (household
