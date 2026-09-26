@@ -1,5 +1,6 @@
 import { addDays, addMonths, addWeeks, addYears, differenceInCalendarDays } from "date-fns";
-import type { Frequency } from "./types";
+import { MAX_FREQUENCY_COUNT } from "./constants";
+import type { Frequency, FrequencyUnit } from "./types";
 
 /**
  * A calendar date in the user's local time, written "YYYY-MM-DD".
@@ -78,4 +79,28 @@ export function addFrequency(from: CalendarDate, frequency: Frequency): Calendar
 /** Whole calendar days from `from` to `to`; negative when `to` is earlier. Unaffected by DST. */
 export function daysBetween(from: CalendarDate, to: CalendarDate): number {
   return differenceInCalendarDays(toLocalDate(to), toLocalDate(from));
+}
+
+/**
+ * Average days in each unit, for converting a frequency between units. A year is the average
+ * Gregorian year and a month is a twelfth of it, so years and months convert exactly (1 year =
+ * 12 months) and a year comes out at 365 days after rounding.
+ */
+const AVERAGE_DAYS: Record<FrequencyUnit, number> = {
+  day: 1,
+  week: 7,
+  month: 365.2425 / 12,
+  year: 365.2425,
+};
+
+/**
+ * The same length of time in another unit, rounded to a whole number: 2 weeks → 14 days,
+ * 2 months → 61 days, 10 days → 1 week. A convenience for editing, not date arithmetic: due
+ * dates still come from `addFrequency`, where "2 months" is never a day count. Kept between 1
+ * and MAX_FREQUENCY_COUNT so the result is always a valid frequency.
+ */
+export function convertFrequency(frequency: Frequency, unit: FrequencyUnit): Frequency {
+  const days = frequency.count * AVERAGE_DAYS[frequency.unit];
+  const count = Math.round(days / AVERAGE_DAYS[unit]);
+  return { count: Math.min(Math.max(count, 1), MAX_FREQUENCY_COUNT), unit };
 }

@@ -116,11 +116,11 @@ files first (see "Screenshots to capture" below) and adjust `externalLink` once 
       "Treated saved data as untrusted input: every load and every import passes the same schema and tree-integrity checks, every write is validated before it is stored, and unreadable data is preserved and surfaced to the user instead of being silently overwritten.",
       "Wrote a small, readable service worker: pages are network-first, hashed build files are cache-first, and each deployment gets its own cache that replaces the previous one only after it is complete. Every route is static, with the item id in the query string, so one cached page serves every item offline.",
       "Stored the tree as a flat list of nodes linked by parent id, with fractional-index sort keys. Moving an item is a one-field change, the picker offers only legal destinations, and the structure maps directly onto database rows for a future sync layer.",
-      "Kept all rules as pure, framework-free functions with 120 unit tests, and verified the real app in a headless browser: full offline use, upgrade between two deployments, backup and restore, and storage failure.",
+      "Kept all rules as pure, framework-free functions with 142 unit tests, and verified the real app in a headless browser: full offline use, upgrade between two deployments, backup and restore, and storage failure.",
     ],
     results: [
       "A complete, installable v1 shipped in a weekend: works offline, no account, no backend costs.",
-      "All scheduling, ranking and completion rules covered by 120 automated tests; every bug fix landed with a test proven to fail on the old code.",
+      "All scheduling, ranking and completion rules covered by 142 automated tests; every bug fix landed with a test proven to fail on the old code.",
       "Backup and restore verified on a real iPhone, with a file that moves through Messages, Mail, AirDrop or Files.",
       "20 automated code-review findings triaged: 16 fixed, 4 declined with recorded reasons.",
       "Architecture ready for cloud sync: the storage layer is a single swappable interface and the data model maps 1:1 to database rows.",
@@ -148,7 +148,7 @@ Save under `web-wizard-dev-v2/public/portfolio_images/sincewhen/`.
 | --- | --- | --- |
 | `due-screen.png` | Due tab | A severe task with the "!" on top, a few red and yellow below, room paths visible, location chips |
 | `room-screen.png` | A room | Tasks sorted by urgency above sub-rooms, breadcrumb, at least one orange or red sub-room badge |
-| `rooms-overview.png` | Rooms tab | Several locations or rooms in different colours, including a dark red one |
+| `rooms-overview.png` | Folders tab | Several locations or rooms in different colours, including a dark red one |
 | `add-task.png` | Add form | Name, "every 2 months", the "last done" choices |
 | `settings-backup.png` | Settings | The share and save backup buttons, last-backup line |
 

@@ -10,3 +10,6 @@
 export function roomHref(id: string | null): string {
   return id === null ? "/rooms" : `/rooms?id=${encodeURIComponent(id)}`;
 }
+
+/** The screen for each "Open the app on" choice in Settings. See app/page.tsx. */
+export const START_SCREEN_HREF = { folders: "/rooms", due: "/due" } as const;

@@ -3,6 +3,7 @@
 import { useState, useSyncExternalStore } from "react";
 import { XIcon } from "lucide-react";
 import { isInstalled } from "@/lib/pwa/pwa";
+import { InstallSteps } from "./install-steps";
 
 const DISMISSED_KEY = "sincewhen:install-hint-dismissed";
 
@@ -22,7 +23,7 @@ function wasDismissed(): boolean {
  *
  * Installing is not cosmetic here: Safari deletes a site's saved data after 7 days without a
  * visit, and an installed app is exempt. iOS offers no install button a page can trigger, so
- * the hint has to describe the Share-menu steps instead.
+ * the hint has to describe the steps instead (see InstallSteps).
  */
 export function InstallHint() {
   // useSyncExternalStore reads a browser-only value without a server/client mismatch: the
@@ -45,14 +46,21 @@ export function InstallHint() {
   };
 
   return (
-    <aside className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-950">
-      <div className="flex-1">
+    <aside className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-950 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-100">
+      <div className="flex flex-1 flex-col gap-1">
         <p className="font-semibold">Install Sincewhen to keep your data safe</p>
-        <p>
-          In a browser tab, your phone may erase saved tasks after a week away. On iPhone: tap Share,
-          then &ldquo;Add to Home Screen&rdquo;. On Android: open the menu, then &ldquo;Install
-          app&rdquo;. Then use the app from its icon.
-        </p>
+        <p>In a browser tab, your phone may erase saved tasks after a week away. Add it to your home screen.</p>
+        {/* Folded away so the hint stays small above the task list. */}
+        <details>
+          <summary className="cursor-pointer font-medium underline">Show me how</summary>
+          <div className="mt-2 flex flex-col gap-2">
+            <InstallSteps />
+            <p>
+              Then open it from the new icon. On iPhone and iPad, tasks added in a browser tab do not move into the
+              app, so install first.
+            </p>
+          </div>
+        </details>
       </div>
       <button type="button" aria-label="Dismiss" onClick={dismiss} className="-m-1 p-2">
         <XIcon className="size-4" />

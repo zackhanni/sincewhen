@@ -72,7 +72,74 @@ Headless Chromium cannot exercise these, so they are built but unproven:
       Chrome on Android doesn't support badges (see `pitfalls.md`). Needs a permission prompt
       first. The app icon itself is a placeholder until a new one is designed.
 
+## Launch prep, round 2
+
+Agreed with Zack on 2026-09-26. Everything goes on branch `launch-prep`. Items marked "nice to
+have" can ship after the Reddit post; the rest land before it. Built 2026-09-26 (uncommitted),
+checked in a headless browser and with axe-core; the items under "Still to check" need Zack.
+
+### Built
+
+- [x] **Stop calling everything "Rooms".** The top of the tree is titled "Sincewhen" (heading,
+      breadcrumb, "Back to Sincewhen"); the tab is "Folders"; "Add a location or category"; the
+      move picker and empty states match. Code names (`activeLocationId`, `/rooms`) stay.
+- [x] The name placeholder follows the "Repeats" switch: "Change the air filter" for a task,
+      "Home, Work, or Cleaning" at the top level, "Kitchen" inside another item.
+- [x] **Wide screens.** From 640px the page widens to 64rem and lists become a grid of 20rem
+      columns (one on a phone, two on a fold or iPad, three on a desktop; fewer with Large).
+- [x] **Theme: Match device / Light / Dark**, Match device by default, following the device live
+      while open. Dark versions of every hard-coded colour; no white flash on launch (head
+      script); browser bar colour follows. axe-core: 0 WCAG A/AA issues on every screen, both
+      themes, both sizes.
+- [x] **Interface size: Default / Large** (125%, everything scales). Saved per device.
+- [x] **Export: "Include display settings" checkbox.** Import applies them and says so in the
+      preview. Backups stay readable both ways (tested): the field sits beside the data, and an
+      unreadable one is ignored rather than failing the import.
+- [x] **Convert the number when the unit changes** (only when editing a saved task, always
+      from the saved value: 2 weeks → 14 days, 2 months → 61 days).
+- [x] **Install steps** in one component, used by the install hint (now folded behind "Show me
+      how"), Settings and the intro: iOS 26 Safari path, Android, and "open in Safari" for Brave.
+- [x] **Intro for first-time users**: 6 pages (welcome, folders, check-off, colours, free,
+      private and offline, then install on a phone or the QR code on a desktop). "Don't show this again";
+      reading to the end also counts; Settings > About > "Show the intro".
+- [x] **Desktop QR code** (`public/qr-code.svg`, decodes to the live address; see pwa.md to remake).
+- [x] **Example setup**: "Start with examples" at the end of the intro and on both empty
+      screens. Dates relative to today, every colour shows on any day (tested over two years).
+- [x] **Version in Settings > About**: the date of the built commit plus its short hash, set
+      automatically in `next.config.ts`.
+
+- [x] **The first backup nudge waits a week** after the oldest item was added (Zack,
+      2026-09-26), so a new user who adds the examples is not asked on day one.
+- [x] **"Open the app on" Folders or Due** in Settings > Display, Folders by default. `/` is now
+      a launcher; the Due tab moved to `/due` (added to the service worker, offline launch
+      tested for both choices). Included in the display settings a backup can carry.
+- [x] **Back navigation beyond the breadcrumb:** a ‹ button beside the title on every inner
+      screen, and an edge swipe in the installed iPhone/iPad app. Both go one level up.
+
+### Still to decide or check (Zack)
+
+- [ ] Folders or Due as the default start screen: Zack is testing with other users. The choice
+      is in Settings; the default is `DEFAULT_DISPLAY_SETTINGS.startOn` in `lib/display`.
+- [ ] The intro and Settings now say the app works without internet. Proven in a headless
+      browser; confirm with the airplane-mode check under "Still to verify on a real phone".
+- [ ] The edge swipe on a real iPhone, in the installed app. If iOS ever adds its own back
+      swipe to home-screen apps, both would fire and this one should go.
+
+- [ ] Tab name: "Folders" for now. "All" was the first idea but clashes with the "All" chip on
+      the Due tab.
+- [ ] On the iPhone: the status bar in dark mode in the installed app (`layout.tsx` sets
+      `statusBarStyle: "default"`; untested in dark), Large size, the intro, and the install
+      steps as written.
+- [ ] On the iPad: the two-column layout, portrait and landscape, and the install steps there.
+- [ ] On the live site: which date the version shows (git or build-date fallback, see pwa.md).
+- [ ] Edit the example list in `lib/core/examples.ts` if it should differ.
+
 ## Future additions (not v1)
+
+- **Sharing.** Share the whole account, or only chosen rooms, with another person (household
+  chores, for example). Show who completed a task, not only when. Later, perhaps a history of
+  who has been doing what. Needs Supabase sync and login first; each completion log entry would
+  gain a `completedBy` field.
 
 - **Supabase sync and login.** Implement the storage interface against a `nodes` table (one row
   per node, plus `user_id`). Add TanStack Query for the sync layer at that point.
@@ -84,8 +151,6 @@ Headless Chromium cannot exercise these, so they are built but unproven:
   `public/icons` and `app/apple-icon.png` were rendered from it and must be re-rendered together.
 - **An "update available" prompt.** A new deploy is picked up on the next launch; there is no
   in-app notice yet.
-- **Dark mode.** The theme has dark tokens, but the status colours in `lib/status-styles.ts`
-  are light-only and nothing sets the `.dark` class yet.
 - **Automated browser tests.** Phase 3 was checked with a throwaway Playwright script; a
   committed e2e suite would make that repeatable.
 - **Drag to reorder.** The `sortOrder` field is already a fractional-indexing key; only the drag

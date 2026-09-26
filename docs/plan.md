@@ -11,8 +11,10 @@ due that long after you **last completed it**, and stays at the top of its list 
 acknowledge it. It is not a calendar reminder: if you complete a 2-month task three weeks late,
 the next due date is 2 months after the day you actually did it.
 
-Tasks are organised like folders: locations (Home, Work, a parent's house) contain rooms, rooms
-can contain sub-rooms, and any task can be broken into sub-tasks.
+Tasks are organised like folders: locations (Home, Work, a parent's house) or categories
+(Cleaning, Exercise) contain rooms or more folders, and any task can be broken into sub-tasks.
+Because the top level is not always a place, the screens say "location or category" and the
+tab is called Folders; the code still says `location` and `/rooms`.
 
 ## Data model
 
@@ -104,15 +106,62 @@ look worse than a room with 3 of 10 overdue.
 - The item id is a query parameter (`/rooms?id=…`, built by `roomHref`), not a path segment, so
   every route is static and one cached `/rooms` page serves every item offline.
 - Within a screen, tasks are listed above sub-rooms.
-- A **Due** tab is the home screen: a flat list of everything overdue or due soon, with the room
+- **Back always means one level up**, to the item this one sits in, however the user arrived:
+  the ‹ button beside the title, and in the installed iPhone/iPad app a swipe right from the
+  left edge (`swipe-back.tsx`). That app has no back gesture of its own; a Safari tab and
+  Android do, so the swipe is off there, or both would fire. The browser's own back (and
+  Android's) still follows history. The breadcrumb jumps further up.
+- **The app opens on Folders or Due**, chosen in Settings (Folders by default: the colour
+  overview shows which place or category needs work; being tested with other users). `/` is a
+  launcher that shows nothing and replaces itself with the chosen screen (`app/page.tsx`); it is
+  the manifest's `start_url`, so every installed icon goes through it. The tabs have their own
+  addresses (`/due`, `/rooms`, `/settings`), and nothing should link to `/` as a tab.
+- A **Due** tab (`/due`) is a flat list of everything overdue or due soon, with the room
   path shown. It filters by the active location, or all locations. An overdue task hides its
   own sub-tasks here, exactly as it does in the room count, so a room's badge always equals the
   number of overdue rows the Due tab shows for it (both come from one function).
 - Location filter chips on the Due tab choose the active location (or all). They appear only
-  once there are two locations. The Rooms tab always lists every location.
+  once there are two locations. The Folders tab always lists every location; its top screen is
+  titled "Sincewhen".
 - Every item has the same screen (`/rooms?id=…`): a room lists its tasks and sub-rooms, a task
   lists its sub-tasks. Tapping a row opens it; the check circle completes it; the ⋮ button opens
   the options sheet.
+
+## Wide screens
+
+One column on a phone. From 640px up (unfolded phones, tablets, desktops) the page widens to
+64rem and lists become a grid of 20rem columns (`ROW_LIST` in `node-row.tsx`), as many as fit.
+The column width is in rem, so the Large size gets fewer, wider columns on its own.
+
+## Display settings
+
+Theme (Match device / Light / Dark), size (Default / Large) and the start screen (Folders / Due)
+live in `lib/display`, saved per device under `sincewhen:display`, separate from the task data.
+Each field is read on its own (`readValidDisplayFields`), so a value saved before a setting
+existed, or a bad one, falls back to the default without resetting the others. A phone and a tablet can want
+different sizes, so they are not part of `AppData`.
+
+- A script in `<head>` (in `layout.tsx`) applies them before the first paint, so dark mode has no
+  white flash. `applyDisplaySettings` does the same job from React; keep the two in step.
+- Dark mode is the `.dark` class (shadcn's convention). Size is `data-size="large"` on `<html>`,
+  which sets the root font size to 125%; nearly everything is in rem, so all of it scales.
+- "Match device" follows the phone's own appearance, including a sunset schedule, and keeps
+  following while the app is open. The app has no schedule of its own.
+- A backup can include them (a checkbox in Settings). They sit beside the AppData fields in the
+  file, never inside, so older and newer versions of the app read each other's files. Importing
+  applies only the settings the file has; the rest stay as they are on the device.
+
+## First launch
+
+- An intro (`components/app/intro.tsx`) opens on every launch until the user ticks "Don't show
+  this again" or reads it to the end. Settings can reopen it. Its last page is the install steps
+  on a phone, or a QR code to the phone on a computer with a mouse, and on an empty app it ends
+  with "Start with examples" / "Start empty".
+- The examples (`lib/core/examples.ts`) are common chores, dated relative to the day they are
+  added so every colour shows on any day. They are ordinary items, meant to be kept or edited.
+  The store only adds them to an empty app.
+- Settings shows a version: the date of the commit being built (`2026.9.26`), set in
+  `next.config.ts`, so it never needs bumping by hand.
 
 ## Storage and backup
 
@@ -129,8 +178,9 @@ look worse than a room with 3 of 10 overdue.
 - Export is a JSON file, offered both as a download and through the Web Share API
   (`navigator.share({ files })`), which opens the share sheet — that is the "text it to myself"
   feature, with no backend.
-- Exporting records `lastBackupDate`. Once there is data and the last backup is 30+ days old (or
-  there has never been one), the Due tab shows a nudge linking to Settings.
+- Exporting records `lastBackupDate`. Once there is data and the last backup is 30+ days old, the
+  Due tab shows a nudge linking to Settings. Someone who has never backed up is first asked a
+  week after their oldest item was added, not on day one (`isBackupDue` in `lib/backup`).
 - Import is an in-app file picker, validated by the same `parseAppData` used on load, with a
   preview (counts and export date) and a confirmation before replacing data. The data being
   replaced is first copied to `sincewhen:before-import` so a wrong import can be recovered by hand.
@@ -151,7 +201,7 @@ the persistent-storage request, the icon badge and the installed check.
 
 `lib/core` holds all the rules as pure functions with tests: `dates`, `status`, `tree`,
 `summary` (room colour, display order, Due list), `operations` (add / edit / move / duplicate /
-delete), `complete`, `validate`. Import from `@/lib/core` only. Each operation takes the saved
+delete), `complete`, `validate`, `examples`. Import from `@/lib/core` only. Each operation takes the saved
 data and returns a new copy; a refused operation throws a `CoreError` with a `code`.
 
 `lib/store` wraps core in a zustand store (`app-store.ts` is framework-free and tested;
@@ -160,7 +210,9 @@ data and returns a new copy; a refused operation throws a `CoreError` with a `co
 sheet (`node-sheet` + `sheet-context`) that shows the menu, the add / edit form (`node-form`,
 TanStack Form), the move / duplicate picker or the delete prompt. `settings-screen` handles
 backup and restore, with the file logic in `lib/backup` (`backup.ts` is pure and tested;
-`send-file.ts` is the browser share / download code).
+`send-file.ts` is the browser share / download code). `lib/display` holds the theme and size
+settings; `intro` is the first-launch walkthrough and `install-steps` the shared install
+instructions.
 
 ## Stack
 

@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { Fragment } from "react";
-import { CheckIcon, EllipsisVerticalIcon, PlusIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { CheckIcon, ChevronLeftIcon, EllipsisVerticalIcon, PlusIcon } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -19,11 +19,16 @@ import { useToday } from "@/lib/hooks/use-today";
 import { useTreeIndex } from "@/lib/hooks/use-tree-index";
 import { roomHref } from "@/lib/routes";
 import { TASK_DUE_TEXT } from "@/lib/status-styles";
-import { NodeRow } from "./node-row";
+import { cn } from "@/lib/utils";
+import { NodeRow, ROW_LIST } from "./node-row";
+import { StartWithExamplesButton } from "./start-with-examples-button";
 import { useSheet } from "./sheet-context";
+import { SwipeBack } from "./swipe-back";
 
 /**
- * The screen for one item. `id === null` is the top of the tree, which lists the locations.
+ * The screen for one item. `id === null` is the top of the tree, which lists the locations and
+ * categories. It carries the app's name, because top-level items are not always places (Home,
+ * Work) — they can just as well be categories (Cleaning, Exercise).
  * Every item has this same screen — a room lists its tasks and sub-rooms, a task lists its
  * sub-tasks — which is what lets anything be broken down further.
  */
@@ -39,7 +44,7 @@ export function NodeScreen({ id }: { id: string | null }) {
       <div className="py-16 text-center">
         <p className="font-medium">This item no longer exists.</p>
         <Link href="/rooms" className="text-sm underline">
-          Back to Rooms
+          Back to Sincewhen
         </Link>
       </div>
     );
@@ -48,6 +53,10 @@ export function NodeScreen({ id }: { id: string | null }) {
   const path = id === null ? [] : getPath(index, id);
   const timing = node ? getTaskTiming(node, today) : null;
   const views = getChildViews(index, id, today);
+  // "Back" always means one level up, to the item this one sits in, whichever way the user
+  // arrived. The breadcrumb covers jumping further.
+  const parent = path.length > 1 ? path[path.length - 2] : null;
+  const backHref = roomHref(parent?.id ?? null);
 
   return (
     <div className="flex flex-col gap-4">
@@ -55,7 +64,7 @@ export function NodeScreen({ id }: { id: string | null }) {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink render={<Link href="/rooms" />}>Rooms</BreadcrumbLink>
+              <BreadcrumbLink render={<Link href="/rooms" />}>Sincewhen</BreadcrumbLink>
             </BreadcrumbItem>
             {path.map((step) => (
               <Fragment key={step.id}>
@@ -74,8 +83,17 @@ export function NodeScreen({ id }: { id: string | null }) {
       )}
 
       <header className="flex items-start gap-2">
+        {node && (
+          <Link
+            href={backHref}
+            aria-label={`Back to ${parent?.name ?? "Sincewhen"}`}
+            className={cn(buttonVariants({ variant: "ghost", size: "icon-lg" }), "-ml-2")}
+          >
+            <ChevronLeftIcon className="size-6" />
+          </Link>
+        )}
         <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-semibold tracking-tight break-words">{node?.name ?? "Rooms"}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight break-words">{node?.name ?? "Sincewhen"}</h1>
           {node && timing && (
             <p className="text-sm">
               <span className={TASK_DUE_TEXT[timing.status]}>{formatDue(timing)}</span>
@@ -99,16 +117,18 @@ export function NodeScreen({ id }: { id: string | null }) {
           </Button>
         )}
       </header>
+      {node && <SwipeBack href={backHref} />}
 
+      {/* Full width on a phone, where it is easy to hit; its natural width on a wide screen. */}
       {node && timing && (
-        <Button size="lg" onClick={() => completeTask(node.id, node.name)}>
+        <Button size="lg" className="sm:w-fit sm:px-6" onClick={() => completeTask(node.id, node.name)}>
           <CheckIcon />
           Mark done
         </Button>
       )}
 
       {views.length > 0 ? (
-        <ul className="flex flex-col gap-2">
+        <ul className={ROW_LIST}>
           {views.map((view) => (
             <NodeRow key={view.node.id} view={view} hasChildren={getChildren(index, view.node.id).length > 0} />
           ))}
@@ -116,17 +136,26 @@ export function NodeScreen({ id }: { id: string | null }) {
       ) : (
         <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
           {id === null
-            ? "Start by adding a location, such as Home or Work."
+            ? "Start with a location or a category, such as Home, Work or Cleaning."
             : timing
               ? "No sub-tasks. Add some to break this task into steps."
-              : "Nothing here yet. Add a task, or a room to hold tasks."}
+              : "Nothing here yet. Add a task, or a folder to hold tasks."}
         </p>
       )}
 
-      <Button variant="outline" size="lg" onClick={() => openSheet({ mode: "add", parentId: id })}>
-        <PlusIcon />
-        {id === null ? "Add a location" : timing ? "Add a sub-task" : "Add a task or room"}
-      </Button>
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <Button
+          variant="outline"
+          size="lg"
+          className="sm:w-fit sm:px-6"
+          onClick={() => openSheet({ mode: "add", parentId: id })}
+        >
+          <PlusIcon />
+          {id === null ? "Add a location or category" : timing ? "Add a sub-task" : "Add a task or folder"}
+        </Button>
+        {/* An empty app can be filled with common chores to try it out, or to keep. */}
+        {id === null && views.length === 0 && <StartWithExamplesButton />}
+      </div>
     </div>
   );
 }

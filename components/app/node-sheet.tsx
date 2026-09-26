@@ -68,10 +68,15 @@ function SheetBody({ sheet, index }: { sheet: SheetState; index: TreeIndex }) {
     };
     return (
       <>
-        <SheetHeading title={parent ? `Add to ${parent.name}` : "Add a location"} />
-        {/* A top-level item is a place (Home, Work), so it starts as a folder; anything inside
-            a place is most often a task. Either can be switched in the form. */}
-        <NodeForm startsRepeating={sheet.parentId !== null} submitLabel="Add" onSubmit={submit} />
+        <SheetHeading title={parent ? `Add to ${parent.name}` : "Add a location or category"} />
+        {/* A top-level item is a place or a category (Home, Cleaning), so it starts as a folder;
+            anything inside one is most often a task. Either can be switched in the form. */}
+        <NodeForm
+          startsRepeating={sheet.parentId !== null}
+          atTopLevel={sheet.parentId === null}
+          submitLabel="Add"
+          onSubmit={submit}
+        />
       </>
     );
   }
@@ -90,6 +95,7 @@ function SheetBody({ sheet, index }: { sheet: SheetState; index: TreeIndex }) {
           <NodeForm
             node={node}
             startsRepeating={false}
+            atTopLevel={node.parentId === null}
             submitLabel="Save"
             onSubmit={(result) => {
               try {
@@ -132,7 +138,7 @@ function MenuBody({ node }: { node: TaskNode }) {
         <Button
           variant="ghost"
           size="lg"
-          className="justify-start gap-3 text-red-600"
+          className="justify-start gap-3 text-red-600 dark:text-red-400"
           onClick={() => openSheet({ mode: "delete", nodeId: node.id })}
         >
           <Trash2Icon className="size-5" />
@@ -192,7 +198,7 @@ function PlacementBody({ node, index, action }: { node: TaskNode; index: TreeInd
                 style={{ paddingLeft: `${0.75 + depth * 1.25}rem` }}
                 onClick={() => choose(target?.id ?? null)}
               >
-                {target?.name ?? "Top level (a new location)"}
+                {target?.name ?? "Top level (a new location or category)"}
                 {isCurrentParent && <span className="ml-2 text-xs text-muted-foreground">current</span>}
               </Button>
             </li>

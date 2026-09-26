@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { addFrequency, daysBetween, isValidCalendarDate, toCalendarDate, toLocalDate } from "./dates";
+import {
+  addFrequency,
+  convertFrequency,
+  daysBetween,
+  isValidCalendarDate,
+  toCalendarDate,
+  toLocalDate,
+} from "./dates";
 
 describe("isValidCalendarDate", () => {
   it("accepts real dates, including a leap day", () => {
@@ -66,5 +73,32 @@ describe("daysBetween", () => {
   it("is not thrown off by a daylight-saving change", () => {
     // US clocks move forward on 2026-03-08, making that day 23 hours long.
     expect(daysBetween("2026-03-07", "2026-03-09")).toBe(2);
+  });
+});
+
+describe("convertFrequency", () => {
+  it("converts weeks to days exactly", () => {
+    expect(convertFrequency({ count: 2, unit: "week" }, "day")).toEqual({ count: 14, unit: "day" });
+  });
+
+  it("rounds months and years to the nearest whole day", () => {
+    expect(convertFrequency({ count: 2, unit: "month" }, "day")).toEqual({ count: 61, unit: "day" });
+    expect(convertFrequency({ count: 1, unit: "year" }, "day")).toEqual({ count: 365, unit: "day" });
+    expect(convertFrequency({ count: 2, unit: "year" }, "day")).toEqual({ count: 730, unit: "day" });
+  });
+
+  it("converts years and months exactly", () => {
+    expect(convertFrequency({ count: 1, unit: "year" }, "month")).toEqual({ count: 12, unit: "month" });
+    expect(convertFrequency({ count: 18, unit: "month" }, "year")).toEqual({ count: 2, unit: "year" });
+  });
+
+  it("rounds to the nearest when going to a bigger unit", () => {
+    expect(convertFrequency({ count: 10, unit: "day" }, "week")).toEqual({ count: 1, unit: "week" });
+    expect(convertFrequency({ count: 2, unit: "month" }, "week")).toEqual({ count: 9, unit: "week" });
+  });
+
+  it("never goes below 1 or above the maximum", () => {
+    expect(convertFrequency({ count: 1, unit: "day" }, "year")).toEqual({ count: 1, unit: "year" });
+    expect(convertFrequency({ count: 999, unit: "year" }, "day")).toEqual({ count: 999, unit: "day" });
   });
 });

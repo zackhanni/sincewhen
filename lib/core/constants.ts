@@ -32,5 +32,10 @@ export const ROOM_DARK_RED_MIN_SCORE = 6;
 
 // --- Backups -----------------------------------------------------------------------------------
 
-/** The Due tab suggests a backup once the last one is this old (or there has never been one). */
+/** The Due tab suggests a backup once the last one is this old. */
 export const BACKUP_NUDGE_DAYS = 30;
+/**
+ * Someone who has never backed up is first asked once their oldest item is this old — not the
+ * moment they add their first task or the examples, when there is little to lose.
+ */
+export const FIRST_BACKUP_NUDGE_DAYS = 7;

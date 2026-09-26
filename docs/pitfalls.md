@@ -60,6 +60,11 @@ and reads the contents rather than trusting the type. Feature-detect; never assu
 `/settings` had to be added to `PAGES` in `sw.js`. Forgetting means the page fails offline, with
 no error during development.
 
+### `/` is a launcher, not the Due tab
+Installed icons open `start_url` (`/`), so `/` decides the start screen and replaces itself
+with it. The Due tab lives at `/due`. A tab or link pointing at `/` would bounce the user to
+whatever the start screen is instead of where they tapped. Link to `/due` or `/rooms`.
+
 ### A fixed cache name grows forever
 `sw.js` does not change between deploys, so with a constant cache name `install` and `activate`
 never re-ran and every deploy's hashed build files piled up in one cache until quota ran out. The
@@ -85,6 +90,13 @@ after the user grants notification permission, which the app never asks for. Chr
 Android has no Badging API support at all. Don't describe the badge as working until a phone
 shows it (WebKit blog, 2023-02-16; MDN browser-compat-data).
 
+### Brave on iPhone cannot install the app, and Safari moved the button
+Brave on iPhone has no "Add to Home Screen", not even under Share, and it does not name itself
+to the page, so it cannot be detected. On iOS 26 Safari's Share is inside the ••• menu, with "Add
+to Home Screen" under View More. The old hint ("tap Share") was wrong in both. The steps now live
+in one place (`install-steps.tsx`) and end with "Can't find it? Open this page in Safari".
+(Zack, on his iPhone, 2026-09-26.)
+
 ### Do not ask for persistent storage on page load
 Firefox answers `navigator.storage.persist()` with a permission prompt. It is now requested after
 the user adds an item or restores a backup. (Found by CodeRabbit on PR #3.)
@@ -99,6 +111,16 @@ the user adds an item or restores a backup. (Found by CodeRabbit on PR #3.)
 `lastCompleted` is `YYYY-MM-DD` in the user's local time. `new Date("2026-03-01")` parses as UTC
 midnight, which is the previous day in US timezones — always parse and format through the helpers
 in `lib/core`, never with the `Date` constructor on a bare date string.
+
+### Converting a frequency from its last conversion piles up rounding
+Switching a saved "every 2 weeks" to days, then months, then weeks gave 14 days, 1 month, then 4
+weeks: each step rounded the previous one. `node-form.tsx` now always converts from the saved
+frequency, so going back to the original unit restores the original number.
+
+### Dated examples must work on every day, not just today
+The examples are dated "N days ago", and whether 35 days ago is overdue for a monthly task
+depends on how long the month was. `examples.test.ts` builds them for every day of two years
+(one a leap year) and checks every colour appears. It was seen to fail when one date was moved.
 
 ### A `YYYY-MM-DD` regex is a shape check, not a validity check
 It accepts `2026-02-30`, which `Date` silently rolls to March 2. Validate by constructing the
@@ -150,6 +172,12 @@ tasks loaded (seed `localStorage["sincewhen"]` in a throwaway browser profile, t
 Lighthouse against that browser with `--disable-storage-reset`), including a long-overdue task
 and rooms at every badge level.
 
+### A colour that passes in light mode can fail in dark
+`text-yellow-700` is fine on a white card and unreadable on a near-black one. Every hard-coded
+text colour needs a `dark:` partner (see `lib/status-styles.ts`). Checked with axe-core in
+Playwright on every screen in both themes and both sizes, with data covering every status and
+room level; a control run with the old yellow on a dark card was flagged, so the zero is real.
+
 ## State and UI
 
 ### Render nothing until the store has loaded
@@ -190,6 +218,18 @@ sending null, so turning a task into a folder cannot wipe its history.
 A phone app is resumed, not reloaded. `useToday` re-reads the date on focus / visibility change;
 do not cache `todayCalendarDate()` at module level.
 
+### React's development remount wipes what the head script set on `<html>`
+The script in `layout.tsx` sets the `dark` class and `data-size` before the first paint. In
+development, Strict Mode remounts once and resets `<html>` to its JSX attributes, removing both.
+`AppShell` re-applies them in a `useLayoutEffect`; production does not need it but it is
+harmless. `<html>` also carries `suppressHydrationWarning`, because the server's HTML and the
+page React finds differ on purpose. (From the Next.js guide "Preventing flash before hydration".)
+
+### The intro covers every screen on a fresh launch
+It opens on every page load until dismissed, and a modal makes the rest of the page unclickable.
+A browser test that loads a page must seed `localStorage["sincewhen:intro-dismissed"] = "1"`, or
+close the intro first. `page.goto` counts as a new launch; clicking a tab does not.
+
 ### Tailwind cannot see class names built from pieces
 `border-${colour}-500` is never generated. `lib/status-styles.ts` writes every class in full.
 
@@ -228,6 +268,12 @@ that this stops working in a future major. With `.mts`, `__dirname` does not exi
 `AGENTS.md` carries a block generated by `next dev` pointing at the bundled docs in
 `node_modules/next/dist/docs/`. Read the relevant guide there before using a Next.js API. The
 block is re-created if removed, so keep it committed.
+
+### Next.js will not start a second dev server in the same folder
+`pnpm dev --port 3461` exited with "You can access the existing server at http://localhost:3001"
+because Zack's own `pnpm dev` was already running. Find it with `lsof -ti :3001` and check its
+folder (`lsof -a -p <pid> -d cwd`) before trusting it; it hot-reloads, so it serves the current
+code. Do not stop someone else's server to start your own.
 
 ### shadcn was initialised with the `base-nova` style (Base UI, not Radix)
 Components in `components/ui` are built on Base UI. Most online shadcn examples assume Radix:

@@ -16,7 +16,7 @@ const BUILD_ID = new URL(self.location.href).searchParams.get("v") ?? "dev";
 const CACHE = `sincewhen-${BUILD_ID}`;
 
 // Every page of the app. `/rooms` serves every item (`/rooms?id=...`), see lib/routes.ts.
-const PAGES = ["/", "/rooms", "/settings"];
+const PAGES = ["/", "/due", "/rooms", "/settings"];
 
 // --- install: download the pages and the files they need, before the worker takes over -------
 self.addEventListener("install", (event) => {
