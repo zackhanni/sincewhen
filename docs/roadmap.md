@@ -48,8 +48,14 @@ next phase may branch from an unmerged phase, but never further than that.
 
 ## Launch (owner: Zack)
 
-- [ ] Serve at `sincewhen.webwizarddev.com` — back up on the old address FIRST; a new domain is
-      an empty app (steps at the top of `portfolio-writeup.md`).
+- [x] Serve at `sincewhen.webwizarddev.com` (live 2026-09-24). A new domain is an empty app,
+      so back up on the old address and restore on the new one.
+- [ ] Old address redirects to the new one: `next.config.ts` sends `sincewhen-ruby.vercel.app`
+      to `sincewhen.webwizarddev.com` (307) on branch `launch-prep`. Deploys when merged.
+- [x] Small-text contrast with tasks loaded: grey text on long-overdue rows and the orange and
+      red room badges were under 4.5:1. Lighthouse accessibility 96 → 100 on the 3 affected
+      screens (local production build with sample tasks, 2026-09-25; branch `launch-prep`).
+      Re-measure on the live site after it deploys.
 - [ ] Add the entry and 5 screenshots to the `/portfolio` page of `web-wizard-dev-v2`.
 - [ ] Reddit post for outside testers, after the phone checks below.
 
@@ -61,7 +67,10 @@ Headless Chromium cannot exercise these, so they are built but unproven:
 - [ ] "Share backup" opens the iOS share sheet and the file arrives in Messages / Files.
 - [x] "Save backup file" then "Choose a backup file" on an iPhone: saves to Files, the picker
       opens where it was saved, and the restore works (Zack, 2026-09-19). A second device is untested.
-- [ ] The overdue count shows on the home-screen icon.
+- [ ] The overdue count shows on the home-screen icon. Expected to fail as built: iOS shows a
+      web app's badge only after notification permission, which the app never asks for, and
+      Chrome on Android doesn't support badges (see `pitfalls.md`). Needs a permission prompt
+      first. The app icon itself is a placeholder until a new one is designed.
 
 ## Future additions (not v1)
 

@@ -72,6 +72,19 @@ The returned Promise is truthy. A cache-upgrade check written that way "passed" 
 cache was still there, under a log line claiming it was deleted. Poll from Node instead, and make
 the script throw when the expected state never arrives.
 
+### The old address keeps its own data
+Browser storage belongs to one address. Moving from `sincewhen-ruby.vercel.app` to
+`sincewhen.webwizarddev.com` started an empty app, and an installed home-screen icon keeps
+opening the address it was installed from. `next.config.ts` now redirects the old address
+(307, temporary on purpose, so the old data can still be reached by removing the rule). Back up
+on the old address and restore on the new one before relying on the redirect.
+
+### The icon badge needs notification permission on iOS
+`navigator.setAppBadge` runs without error, but iOS shows a home-screen web app's badge only
+after the user grants notification permission, which the app never asks for. Chrome on
+Android has no Badging API support at all. Don't describe the badge as working until a phone
+shows it (WebKit blog, 2023-02-16; MDN browser-compat-data).
+
 ### Do not ask for persistent storage on page load
 Firefox answers `navigator.storage.persist()` with a permission prompt. It is now requested after
 the user adds an item or restores a backup. (Found by CodeRabbit on PR #3.)
@@ -124,6 +137,18 @@ Display order comes from `sortOrder` and from urgency. Operations append to the 
 ### A task completed today must stay green
 A daily task is always "due within 1 day". Without the `progress > 0` guard in `status.ts` it
 turns yellow the instant it is checked off.
+
+## Accessibility
+
+### An empty app passes contrast checks that a used one fails
+The coloured rows and room badges only appear once tasks are overdue, so Lighthouse on a fresh
+install scores 100 while the same screens with data scored 96: grey secondary text on a
+long-neglected row's pale-red background (4.33:1) and white on the orange and red room badges
+(about 2.8:1 and 3.8:1), all under the 4.5:1 minimum for small text. Fixed in
+`lib/status-styles.ts` and `components/app/node-row.tsx`. Measure accessibility with made-up
+tasks loaded (seed `localStorage["sincewhen"]` in a throwaway browser profile, then run
+Lighthouse against that browser with `--disable-storage-reset`), including a long-overdue task
+and rooms at every badge level.
 
 ## State and UI
 

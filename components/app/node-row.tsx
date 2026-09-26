@@ -45,6 +45,9 @@ function TaskRow({ view, hasChildren, location }: NodeRowProps) {
   const timing = view.timing!;
   const completeTask = useCompleteTask();
   const isSevere = timing.status === "severe";
+  // The usual grey is only about 4.3:1 on a long-neglected row's pale-red background, under
+  // the 4.5:1 minimum for small text, so those rows use a darker grey.
+  const secondaryText = isSevere ? "text-neutral-600" : "text-muted-foreground";
 
   return (
     <li
@@ -74,9 +77,9 @@ function TaskRow({ view, hasChildren, location }: NodeRowProps) {
           </span>
           <span className="block truncate text-xs">
             <span className={TASK_DUE_TEXT[timing.status]}>{formatDue(timing)}</span>
-            <span className="text-muted-foreground"> · {formatFrequency(node.frequency!)}</span>
+            <span className={secondaryText}> · {formatFrequency(node.frequency!)}</span>
           </span>
-          {location && <span className="block truncate text-xs text-muted-foreground">{location}</span>}
+          {location && <span className={cn("block truncate text-xs", secondaryText)}>{location}</span>}
         </span>
         {/* An overdue task already counts for its sub-tasks, so the badge only appears when
             the task itself is fine but something inside it is not. */}
