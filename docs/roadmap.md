@@ -96,7 +96,9 @@ checked in a headless browser and with axe-core; the items under "Still to check
       preview. Backups stay readable both ways (tested): the field sits beside the data, and an
       unreadable one is ignored rather than failing the import.
 - [x] **Convert the number when the unit changes** (only when editing a saved task, always
-      from the saved value: 2 weeks → 14 days, 2 months → 61 days).
+      from the saved value: 2 weeks → 14 days, 2 months → 61 days). When no count from 1 to
+      999 is close (3 years in days, a daily task in years), the number is cleared and a note
+      asks for one, instead of saving a clamped, different interval.
 - [x] **Install steps** in one component, used by the install hint (now folded behind "Show me
       how"), Settings and the intro: iOS 26 Safari path, Android, and "open in Safari" for Brave.
 - [x] **Intro for first-time users**: 6 pages (welcome, folders, check-off, colors, free,

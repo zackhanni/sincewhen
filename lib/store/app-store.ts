@@ -69,8 +69,8 @@ export type AppState = {
   completeTask: (id: string) => CompletionUndo;
   undoCompletion: (undo: CompletionUndo) => void;
   setActiveLocation: (id: string | null) => void;
-  /** Fills an empty app with the example setup. Does nothing once there is any data. */
-  startWithExamples: () => void;
+  /** Fills an empty app with the example setup. Returns false, and does nothing, once there is any data. */
+  startWithExamples: () => boolean;
   /** Replaces everything with an imported backup that has already passed parseAppData. */
   replaceAllData: (data: AppData) => void;
   markBackedUp: () => void;
@@ -137,8 +137,9 @@ export function createAppStore(storage: StateStorage) {
         startWithExamples: () => {
           // Only ever offered on an empty app; refusing otherwise means a stale button can
           // never overwrite real tasks.
-          if (get().data.nodes.length > 0) return;
+          if (get().data.nodes.length > 0) return false;
           set({ data: buildExampleData(todayCalendarDate(), newId), activeLocationId: null });
+          return true;
         },
         replaceAllData: (data) => set({ data, activeLocationId: null, loadError: null }),
         markBackedUp: () => set({ lastBackupDate: todayCalendarDate() }),

@@ -45,12 +45,12 @@ describe("app store", () => {
 
   it("fills an empty app with the examples, and never touches one that has data", async () => {
     const empty = await loadedStore(memoryStorage().storage);
-    empty.getState().startWithExamples();
+    expect(empty.getState().startWithExamples()).toBe(true);
     expect(empty.getState().data.nodes.length).toBeGreaterThan(10);
 
     const used = await loadedStore(memoryStorage().storage);
     used.getState().addNode({ parentId: null, name: "Home", frequency: null, lastCompleted: null });
-    used.getState().startWithExamples();
+    expect(used.getState().startWithExamples()).toBe(false);
     expect(used.getState().data.nodes.map((n) => n.name)).toEqual(["Home"]);
   });
 

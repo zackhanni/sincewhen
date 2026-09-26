@@ -18,8 +18,10 @@ export function StartWithExamplesButton({ variant = "outline", onStarted }: Star
       variant={variant}
       size="lg"
       onClick={() => {
-        appStore.getState().startWithExamples();
-        toast.success("Examples added", { description: "Edit or delete them like any other item." });
+        // The store refuses once there is data, so only claim success when it really added them.
+        if (appStore.getState().startWithExamples()) {
+          toast.success("Examples added", { description: "Edit or delete them like any other item." });
+        }
         onStarted?.();
       }}
     >

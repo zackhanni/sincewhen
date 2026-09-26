@@ -84,7 +84,8 @@ export function applyDisplaySettings(settings: DisplaySettings): void {
  * The same job as `applyDisplaySettings`, as a script that runs in <head> while the page is still
  * being read, before anything is drawn. Without it, someone in dark mode would see a white flash
  * on every launch, until React loads. It is plain ES5 because it runs before any of our code
- * exists. Keep it in step with `applyDisplaySettings` above.
+ * exists. Keep it in step with `applyDisplaySettings` above. The theme-color meta tag comes from
+ * the viewport metadata, which Next.js renders earlier in <head>, so it is there to update.
  */
 export const DISPLAY_SETTINGS_SCRIPT = `(function(){try{
 var s=JSON.parse(localStorage.getItem(${JSON.stringify(DISPLAY_SETTINGS_KEY)})||"{}")||{};
@@ -93,6 +94,8 @@ var root=document.documentElement;
 if(dark)root.classList.add("dark");
 root.style.colorScheme=dark?"dark":"light";
 if(s.size==="large")root.dataset.size="large";
+var bar=document.querySelector('meta[name="theme-color"]');
+if(bar)bar.setAttribute("content",dark?${JSON.stringify(BAR_COLOR.dark)}:${JSON.stringify(BAR_COLOR.light)});
 }catch(e){}})()`;
 
 // --- The current settings, shared by every component that shows or changes them -------------

@@ -93,14 +93,24 @@ const AVERAGE_DAYS: Record<FrequencyUnit, number> = {
   year: 365.2425,
 };
 
+export type FrequencyConversion =
+  | { ok: true; frequency: Frequency }
+  /** No whole number of the new unit, from 1 to MAX_FREQUENCY_COUNT, comes close. */
+  | { ok: false; reason: "less-than-one" | "over-maximum" };
+
 /**
  * The same length of time in another unit, rounded to a whole number: 2 weeks → 14 days,
  * 2 months → 61 days, 10 days → 1 week. A convenience for editing, not date arithmetic: due
- * dates still come from `addFrequency`, where "2 months" is never a day count. Kept between 1
- * and MAX_FREQUENCY_COUNT so the result is always a valid frequency.
+ * dates still come from `addFrequency`, where "2 months" is never a day count.
+ *
+ * Refuses rather than clamps when the answer is not a valid count: 3 years is about 1,096
+ * days, and quietly offering 999 days (or 1 year for "every day") would save a different
+ * interval that looks like the same one. The caller asks the user for the number instead.
  */
-export function convertFrequency(frequency: Frequency, unit: FrequencyUnit): Frequency {
+export function convertFrequency(frequency: Frequency, unit: FrequencyUnit): FrequencyConversion {
   const days = frequency.count * AVERAGE_DAYS[frequency.unit];
   const count = Math.round(days / AVERAGE_DAYS[unit]);
-  return { count: Math.min(Math.max(count, 1), MAX_FREQUENCY_COUNT), unit };
+  if (count < 1) return { ok: false, reason: "less-than-one" };
+  if (count > MAX_FREQUENCY_COUNT) return { ok: false, reason: "over-maximum" };
+  return { ok: true, frequency: { count, unit } };
 }

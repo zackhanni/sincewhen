@@ -1,10 +1,11 @@
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import type { NextConfig } from "next";
 
-/** Runs a git command and returns its output, or null where git or the repo is not available. */
-function git(command: string): string | null {
+/** Runs git with these arguments and returns its output, or null where git or the repo is not available. */
+function git(...args: string[]): string | null {
   try {
-    return execSync(`git ${command}`, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+    // execFileSync, not execSync: the arguments go straight to git, never through a shell.
+    return execFileSync("git", args, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
   } catch {
     return null;
   }
@@ -17,7 +18,7 @@ function git(command: string): string | null {
  * count would be wrong there. Falls back to the build date (UTC) if git cannot be asked.
  */
 function appVersion(): string {
-  const commitDate = git("log -1 --format=%cs");
+  const commitDate = git("log", "-1", "--format=%cs");
   const date = commitDate && /^\d{4}-\d{2}-\d{2}$/.test(commitDate) ? commitDate : new Date().toISOString().slice(0, 10);
   const [year, month, day] = date.split("-").map(Number);
   return `${year}.${month}.${day}`;
@@ -30,7 +31,7 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_BUILD_ID: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 12) ?? String(Date.now()),
     NEXT_PUBLIC_APP_VERSION: appVersion(),
     // Shown next to the version, so a bug report can be traced to the exact commit.
-    NEXT_PUBLIC_COMMIT: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? git("rev-parse --short=7 HEAD") ?? "",
+    NEXT_PUBLIC_COMMIT: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? git("rev-parse", "--short=7", "HEAD") ?? "",
   },
   async redirects() {
     return [

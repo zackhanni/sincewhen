@@ -29,7 +29,9 @@ export function SwipeBack({ href }: { href: string }) {
 
   useEffect(() => {
     if (!isIosInstalledApp()) return;
-    let start: { x: number; y: number } | null = null;
+    // The finger that started the swipe, followed by its `identifier` so a second finger
+    // cannot move or finish the swipe in its place.
+    let start: { id: number; x: number; y: number } | null = null;
     let isSwipe = false;
 
     const reset = () => {
@@ -37,15 +39,23 @@ export function SwipeBack({ href }: { href: string }) {
       isSwipe = false;
       setDistance(0);
     };
+    const ownTouch = (touches: TouchList) => Array.from(touches).find((touch) => touch.identifier === start?.id);
+
     const onStart = (event: TouchEvent) => {
+      // A second finger cancels the swipe: it has become a pinch or a stray touch.
+      if (event.touches.length !== 1) return reset();
       const touch = event.touches[0];
-      if (event.touches.length !== 1 || touch.clientX > EDGE_WIDTH) return;
-      start = { x: touch.clientX, y: touch.clientY };
+      if (touch.clientX > EDGE_WIDTH) return;
+      // Not while a sheet or dialog is open (both carry role="dialog" only while open): the
+      // swipe would change the page underneath it.
+      if (document.querySelector('[role="dialog"]')) return;
+      start = { id: touch.identifier, x: touch.clientX, y: touch.clientY };
     };
     const onMove = (event: TouchEvent) => {
-      if (!start) return;
-      const dx = event.touches[0].clientX - start.x;
-      const dy = event.touches[0].clientY - start.y;
+      const touch = start && ownTouch(event.touches);
+      if (!start || !touch) return;
+      const dx = touch.clientX - start.x;
+      const dy = touch.clientY - start.y;
       if (!isSwipe) {
         if (Math.hypot(dx, dy) < DECIDE_AFTER) return;
         // Mostly up or down, or leftwards: the user is scrolling, not swiping back.
@@ -55,8 +65,10 @@ export function SwipeBack({ href }: { href: string }) {
       setDistance(Math.max(0, dx));
     };
     const onEnd = (event: TouchEvent) => {
-      if (!start) return;
-      const traveled = event.changedTouches[0].clientX - start.x;
+      const touch = start && ownTouch(event.changedTouches);
+      // Another finger lifting says nothing about the swipe.
+      if (!start || !touch) return;
+      const traveled = touch.clientX - start.x;
       const wasSwipe = isSwipe;
       reset();
       if (wasSwipe && traveled >= TRIGGER_DISTANCE) goBack();

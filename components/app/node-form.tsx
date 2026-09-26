@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useForm, useStore } from "@tanstack/react-form";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -16,6 +16,7 @@ import {
   type FrequencyUnit,
   type TaskNode,
 } from "@/lib/core";
+import { formatFrequency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 /** What the form hands back. `lastCompleted` is left out when the item does not repeat. */
@@ -116,6 +117,23 @@ export function NodeForm({ node, startsRepeating, atTopLevel, submitLabel, onSub
   // Once the user types a number, or when adding a new task, nothing is converted: the number is
   // meant for the unit picked next. Someone who types "2" and then picks "weeks" means 2 weeks.
   const convertFrom = useRef<Frequency | null>(node?.frequency ?? null);
+  // Set when a unit has no close equivalent (3 years in days is over the limit): the number is
+  // cleared so it cannot be saved by accident, and this says why.
+  const [conversionNote, setConversionNote] = useState<string | null>(null);
+
+  const changeUnit = (unit: FrequencyUnit) => {
+    const saved = convertFrom.current;
+    if (!saved) return;
+    const result = convertFrequency(saved, unit);
+    if (result.ok) {
+      form.setFieldValue("count", result.frequency.count);
+      setConversionNote(null);
+      return;
+    }
+    form.setFieldValue("count", Number.NaN);
+    const limit = result.reason === "over-maximum" ? `more than ${MAX_FREQUENCY_COUNT} ${unit}s` : `less than 1 ${unit}`;
+    setConversionNote(`${formatFrequency(saved)} is ${limit}. Enter how many ${unit}s.`);
+  };
 
   return (
     <form
@@ -190,6 +208,7 @@ export function NodeForm({ node, startsRepeating, atTopLevel, submitLabel, onSub
                             value={Number.isNaN(field.state.value) ? "" : field.state.value}
                             onChange={(event) => {
                               convertFrom.current = null;
+                              setConversionNote(null);
                               field.handleChange(event.target.valueAsNumber);
                             }}
                             onBlur={field.handleBlur}
@@ -206,9 +225,7 @@ export function NodeForm({ node, startsRepeating, atTopLevel, submitLabel, onSub
                           value={field.state.value}
                           onChange={(event) => {
                             const unit = event.target.value as FrequencyUnit;
-                            if (convertFrom.current) {
-                              form.setFieldValue("count", convertFrequency(convertFrom.current, unit).count);
-                            }
+                            changeUnit(unit);
                             field.handleChange(unit);
                           }}
                           className={cn(nativeControl, "flex-1")}
@@ -222,6 +239,7 @@ export function NodeForm({ node, startsRepeating, atTopLevel, submitLabel, onSub
                       )}
                     </form.Field>
                   </div>
+                  {conversionNote && <p className="text-sm text-muted-foreground">{conversionNote}</p>}
                 </Field>
 
                 <Field>
