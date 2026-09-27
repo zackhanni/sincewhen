@@ -59,6 +59,18 @@ with its old file list, so build files answer 500 as `text/plain` and the browse
 them. The page looks broken although the build is fine. The process is named `next-server`, so
 `pkill -f "next start"` misses it; stop it by port (`lsof -tiTCP:<port> -sTCP:LISTEN`).
 
+### A lazy image is requested only after layout, so the largest image on a page must be eager
+The landing page's hero screenshot is a light and dark pair, and both were lazy so only the
+visible one would download. But a lazy image is fetched only once layout runs, which made it
+the slowest part of the page. Eager on the hero pair costs one hidden 13 KB twin and took the
+page from 96 to 99 (LCP 2.7 s to 2.3 s). Keep the pairs below the fold lazy.
+
+### Anything the root layout imports on the client ships on every page, the landing page included
+`DisplaySettingsSync` in `app/layout.tsx` imported the display settings file, which used zod, so
+the landing page downloaded zod before its first paint to check three words. Before a root-layout
+client component imports a library, check what that library costs every page. See
+`docs/pagespeed-audit.md`.
+
 ### The browser's storage for the app is about 5.24 million characters, shared by every key
 Measured in Chromium: a 4,284,739-character save plus 957,978 characters in another key filled
 it, and the next save threw `QuotaExceededError`. The saved data, the copy kept before an import
@@ -74,7 +86,8 @@ zod 4 speeds up object parsing with generated code, and probes for permission wi
 reports a `script-src eval` violation, on every page, because a schema is built at page load.
 `lib/core/zod.ts` sets `jitless: true` before any schema exists; a lint rule stops direct
 `import … from "zod"`. Setting it inside `lib/core/types.ts` was not enough: the display
-settings schema is built first on some pages.
+settings schema was built first on some pages. (Display settings no longer use zod, since
+2026-09-27, but any file that does must still import it through `lib/core/zod.ts`.)
 
 ### A page cannot tell whether a download was kept
 `downloadTextFile` fires and forgets, so "Save backup file" marks the backup as done the moment

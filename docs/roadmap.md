@@ -51,21 +51,24 @@ next phase may branch from an unmerged phase, but never further than that.
 PR #7 (`landing-page` → `main`) carries `launch-prep` too: round 2, the landing page and both
 rounds of CodeRabbit fixes. Once it is merged and deployed:
 
-- [ ] **Production is not deploying (found 2026-09-26).** Every merge to `main` since 2026-09-24
-      deployed as Preview (GitHub deployments: 4470d4d, 452e3c3, 8370aa7). The last Production
-      deployment is cf48a4b (2026-09-20), so the live site has no `/about` (404), no 308 on the
-      old address, and none of round 2. Check Vercel → Settings → Git → Production Branch is
-      `main`, then promote 8370aa7 (or the newest `main` commit) to Production. Every check
-      below waits on this.
+- [x] **Production was not deploying (found 2026-09-26, fixed 2026-09-27).** Every merge to
+      `main` from 2026-09-24 deployed as Preview; 8370aa7 was promoted to Production on
+      2026-09-27 02:32 UTC. Vercel keeps the production branch under Settings → Environments →
+      Production → Branch Tracking, not under Git. ⚠️ Confirm the next merge to `main` deploys
+      as Production by itself (`gh api repos/zackhanni/sincewhen/deployments --jq '.[0] |
+      .environment'`).
 - [ ] `git switch main && git pull` (local `main` was behind GitHub).
-- [ ] The old address forwards: `curl -sI https://sincewhen-ruby.vercel.app/rooms` shows 308 to
-      `https://sincewhen.webwizarddev.com/rooms`.
-- [ ] `https://sincewhen.webwizarddev.com/about` answers 200 and its page source has
-      `<link rel="canonical" href="https://sincewhen.webwizarddev.com/about">`.
-- [ ] Settings > About shows a version like `2026.9.26 (a698c9e)`. If the date is the build day
-      instead of the commit day, git was not available in Vercel's build (see pwa.md).
+- [x] The old address forwards: `curl -sI https://sincewhen-ruby.vercel.app/rooms` shows 308 to
+      `https://sincewhen.webwizarddev.com/rooms` (checked 2026-09-27).
+- [x] `https://sincewhen.webwizarddev.com/about` answers 200 and its page source has
+      `<link rel="canonical" href="https://sincewhen.webwizarddev.com/about">` (checked 2026-09-27).
+- [x] Settings > About shows a version like `2026.9.26 (a698c9e)`. If the date is the build day
+      instead of the commit day, git was not available in Vercel's build (see pwa.md). Live
+      shows `2026.9.26` for a build made 2026-09-27 UTC, so git was available (2026-09-27).
 - [ ] Re-measure accessibility on the live site, light and dark, with tasks loaded (see the
-      contrast item below and pitfalls.md > Accessibility).
+      contrast item below and pitfalls.md > Accessibility). Measured 2026-09-27 on a local
+      production build of `skill-pass`: 100 on 8 screens (4 × light/dark), see
+      docs/pagespeed-audit.md. Re-check live once `skill-pass` is merged and deployed.
 - [ ] Open the installed app once with internet so it picks up the new version, then work
       through "Still to verify on a real phone" and "Still to decide or check" below.
 

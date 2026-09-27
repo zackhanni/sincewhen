@@ -26,6 +26,8 @@ locations > rooms > tasks > sub-tasks. Client-only for now: data lives on the de
   the Content-Security-Policy has the shape it does.
 - `docs/scaling-and-algorithm-audit.md` — measured costs at realistic sizes, and the storage
   limit the completion log grows toward.
+- `docs/pagespeed-audit.md` — Lighthouse numbers per page (empty and with tasks, light and dark),
+  what moved them, and how to re-measure (`scripts/pagespeed/`, targets in `pagespeed-targets.json`).
 - `docs/readability-review.md` — review rounds, the words the code uses for folder / room /
   location / item, and small duplication deliberately left alone.
 - `docs/portfolio-writeup.md` — public-facing copy (portfolio entry, Reddit post) and the

@@ -40,10 +40,13 @@ export const metadata: Metadata = {
 };
 
 /**
- * A phone-shaped frame around a real screenshot, in the visitor's own theme. Both variants stay
- * lazy: only the visible one loads, because a hidden lazy image is never fetched. Preloading
- * (`preload`, the old `priority`) would fetch both, so the hero asks for a high fetch priority
- * instead, as the Next.js image docs advise for light and dark pairs.
+ * A phone-shaped frame around a real screenshot, in the visitor's own theme. Below the hero,
+ * both variants stay lazy, so only the visible one loads (a hidden lazy image is never fetched).
+ *
+ * The hero pair is eager with a high fetch priority instead. It is the page's largest paint, and
+ * a lazy image is only requested after layout: measured on mobile, eager took the page from 96 to
+ * 99 and its largest paint from 2.7 s to 2.3 s. The cost is the hidden twin downloading too
+ * (about 13 KB). See docs/pagespeed-audit.md.
  */
 function PhoneShot({ image, alt, isHero = false }: { image: string; alt: string; isHero?: boolean }) {
   const shared = {
@@ -51,6 +54,7 @@ function PhoneShot({ image, alt, isHero = false }: { image: string; alt: string;
     height: 844,
     sizes: "(min-width: 640px) 280px, 70vw",
     fetchPriority: isHero ? ("high" as const) : undefined,
+    loading: isHero ? ("eager" as const) : undefined,
   };
   return (
     <div className="mx-auto w-full max-w-70 overflow-hidden rounded-[2.25rem] border-[6px] border-neutral-900 bg-neutral-900 shadow-2xl dark:border-neutral-700">

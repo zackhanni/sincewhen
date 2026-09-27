@@ -25,4 +25,13 @@ describe("display settings", () => {
     expect(readValidDisplayFields({ startOn: "due", theme: 3 })).toEqual({ startOn: "due" });
     expect(readValidDisplayFields("dark")).toEqual({});
   });
+
+  it("accepts only the exact words, as the old zod enums did", () => {
+    expect(readValidDisplayFields({ theme: "Dark", size: ["large"], startOn: "due " })).toEqual({});
+    expect(readValidDisplayFields({ theme: "system", size: "large", startOn: "folders" })).toEqual({
+      theme: "system",
+      size: "large",
+      startOn: "folders",
+    });
+  });
 });

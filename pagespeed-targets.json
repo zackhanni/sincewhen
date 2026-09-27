@@ -1,0 +1,18 @@
+{
+  "$comment": "Tiered measurement targets for the /pagespeed skill (see the skill's targets.md). tier1 is the public landing page: `/` only redirects in the browser (to /rooms or /due, by the Open the app on setting), so it has nothing of its own to measure. tier2 is the app's three tabs; the installed app opens on /rooms by default. Every page is static. The app pages render from device storage, so these runs measure the EMPTY app; the tasks-loaded state needs localStorage seeded first (see docs/pagespeed-audit.md). Local port 3471 because 3000-3002 are often held by other projects' dev servers on this machine.",
+
+  "origins": {
+    "local": "http://127.0.0.1:3471",
+    "deployed": "https://sincewhen.webwizarddev.com"
+  },
+
+  "tier1": [
+    { "path": "/about", "label": "about", "renderMode": "static" }
+  ],
+
+  "tier2": [
+    { "path": "/rooms", "label": "rooms", "renderMode": "static", "note": "the Folders tab, and every folder and task screen (/rooms?id=...)" },
+    { "path": "/due", "label": "due", "renderMode": "static" },
+    { "path": "/settings", "label": "settings", "renderMode": "static" }
+  ]
+}
