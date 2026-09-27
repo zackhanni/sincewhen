@@ -1,5 +1,5 @@
 import { generateKeyBetween } from "fractional-indexing";
-import { z } from "zod";
+import { z } from "./zod";
 import { MAX_FREQUENCY_COUNT, MAX_NAME_LENGTH } from "./constants";
 import { isValidCalendarDate } from "./dates";
 

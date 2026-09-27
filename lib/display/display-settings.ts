@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/lib/core/zod";
 
 // How the app looks on this device: light or dark, how big everything is drawn, and which screen
 // it opens on. Kept apart from the task data on purpose — a phone and a tablet can want

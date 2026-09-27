@@ -22,6 +22,8 @@ locations > rooms > tasks > sub-tasks. Client-only for now: data lives on the de
 - `docs/pwa.md` — install steps and alternatives.
 - `docs/landing-page.md` — the promotional page at `/about`: where its copy lives, how its
   screenshots are made, and its open questions.
+- `docs/security-audit.md` — security review rounds: what was found, fixed or declined, and why
+  the Content-Security-Policy has the shape it does.
 - `docs/portfolio-writeup.md` — public-facing copy (portfolio entry, Reddit post) and the
   domain-move checklist. Keep its numbers (tests, review findings) true when they change.
 

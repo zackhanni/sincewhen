@@ -54,6 +54,20 @@ deleting a route (or move `.next/dev/types/validator.ts` aside; it is generated)
 `next start` reads `public/` once. Screenshots saved there afterwards answered 404, and
 `next/image` reported "The requested resource isn't a valid image" (400). Restart the server.
 
+A rebuild under a running `next start` breaks it too: the old process serves the new `.next`
+with its old file list, so build files answer 500 as `text/plain` and the browser refuses to run
+them. The page looks broken although the build is fine. The process is named `next-server`, so
+`pkill -f "next start"` misses it; stop it by port (`lsof -tiTCP:<port> -sTCP:LISTEN`).
+
+### zod logs a CSP violation on every page unless it is imported through `lib/core/zod.ts`
+zod 4 speeds up object parsing with generated code, and probes for permission with
+`new Function("")` the moment a `z.object()` is created. The Content-Security-Policy in
+`next.config.ts` forbids that. zod catches the error and falls back, but the browser still
+reports a `script-src eval` violation, on every page, because a schema is built at page load.
+`lib/core/zod.ts` sets `jitless: true` before any schema exists; a lint rule stops direct
+`import … from "zod"`. Setting it inside `lib/core/types.ts` was not enough: the display
+settings schema is built first on some pages.
+
 ### A page cannot tell whether a download was kept
 `downloadTextFile` fires and forgets, so "Save backup file" marks the backup as done the moment
 it starts. Sharing is different: `navigator.share` rejects with `AbortError` when the sheet is

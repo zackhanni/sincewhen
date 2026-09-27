@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { backupFileName, buildBackupText, readBackupText, summarizeData, type BackupReadResult } from "@/lib/backup/backup";
 import { downloadTextFile, makeShareableFile, shareFile } from "@/lib/backup/send-file";
-import { daysBetween } from "@/lib/core";
+import { MAX_BACKUP_FILE_BYTES, daysBetween } from "@/lib/core";
 import {
   getDisplaySettings,
   setDisplaySettings,
@@ -149,6 +149,10 @@ export function SettingsScreen() {
     // Clear the input so picking the same file again still fires this handler.
     event.target.value = "";
     if (!file) return;
+    if (file.size > MAX_BACKUP_FILE_BYTES) {
+      toast.error("This file is too big to be a Sincewhen backup.");
+      return;
+    }
     const result = readBackupText(await file.text());
     if (result.ok) setPendingImport(result);
     else toast.error(result.error);

@@ -51,6 +51,12 @@ next phase may branch from an unmerged phase, but never further than that.
 PR #7 (`landing-page` → `main`) carries `launch-prep` too: round 2, the landing page and both
 rounds of CodeRabbit fixes. Once it is merged and deployed:
 
+- [ ] **Production is not deploying (found 2026-09-26).** Every merge to `main` since 2026-09-24
+      deployed as Preview (GitHub deployments: 4470d4d, 452e3c3, 8370aa7). The last Production
+      deployment is cf48a4b (2026-09-20), so the live site has no `/about` (404), no 308 on the
+      old address, and none of round 2. Check Vercel → Settings → Git → Production Branch is
+      `main`, then promote 8370aa7 (or the newest `main` commit) to Production. Every check
+      below waits on this.
 - [ ] `git switch main && git pull` (local `main` was behind GitHub).
 - [ ] The old address forwards: `curl -sI https://sincewhen-ruby.vercel.app/rooms` shows 308 to
       `https://sincewhen.webwizarddev.com/rooms`.
