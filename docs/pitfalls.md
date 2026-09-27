@@ -59,6 +59,14 @@ with its old file list, so build files answer 500 as `text/plain` and the browse
 them. The page looks broken although the build is fine. The process is named `next-server`, so
 `pkill -f "next start"` misses it; stop it by port (`lsof -tiTCP:<port> -sTCP:LISTEN`).
 
+### The browser's storage for the app is about 5.24 million characters, shared by every key
+Measured in Chromium: a 4,284,739-character save plus 957,978 characters in another key filled
+it, and the next save threw `QuotaExceededError`. The saved data, the copy kept before an import
+(`sincewhen:before-import`) and the parked unreadable copy all count against it. The completion
+log is the part that grows, so the app warns at `STORAGE_WARNING_CHARS`. To test the full case,
+fill the rest of storage exactly (a binary search to the last character): a filler that leaves
+even 1,000 characters free lets the next save through.
+
 ### zod logs a CSP violation on every page unless it is imported through `lib/core/zod.ts`
 zod 4 speeds up object parsing with generated code, and probes for permission with
 `new Function("")` the moment a `z.object()` is created. The Content-Security-Policy in

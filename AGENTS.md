@@ -24,6 +24,8 @@ locations > rooms > tasks > sub-tasks. Client-only for now: data lives on the de
   screenshots are made, and its open questions.
 - `docs/security-audit.md` — security review rounds: what was found, fixed or declined, and why
   the Content-Security-Policy has the shape it does.
+- `docs/scaling-and-algorithm-audit.md` — measured costs at realistic sizes, and the storage
+  limit the completion log grows toward.
 - `docs/portfolio-writeup.md` — public-facing copy (portfolio entry, Reddit post) and the
   domain-move checklist. Keep its numbers (tests, review findings) true when they change.
 

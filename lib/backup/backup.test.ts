@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { dueTask, folder, makeData } from "@/lib/core/test-helpers";
 import { buildExampleData } from "@/lib/core";
-import { backupFileName, buildBackupText, isBackupDue, readBackupText, summarizeData } from "./backup";
+import {
+  backupFileName,
+  buildBackupText,
+  buildCompactBackupText,
+  isBackupDue,
+  readBackupText,
+  summarizeData,
+} from "./backup";
 
 const data = {
   ...makeData([folder("home", null), folder("kitchen", "home"), dueTask("filter", "home"), dueTask("oven", "kitchen")]),
@@ -49,6 +56,13 @@ describe("backup", () => {
     const result = readBackupText(buildBackupText(data, "2026-09-19"));
     expect(result).toMatchObject({ ok: true, exportedAt: "2026-09-19" });
     expect(result.ok && result.data).toEqual(data);
+  });
+
+  it("the compact copy kept before an import reads back the same, and is smaller", () => {
+    const compact = buildCompactBackupText(data, "2026-09-19");
+    const result = readBackupText(compact);
+    expect(result.ok && result.data).toEqual(data);
+    expect(compact.length).toBeLessThan(buildBackupText(data, "2026-09-19").length);
   });
 
   it("leaves display settings out unless asked, and reads them back when included", () => {

@@ -3,6 +3,7 @@
 import { toast } from "sonner";
 import { useStore } from "zustand";
 import type { StateStorage } from "zustand/middleware";
+import { STORAGE_WARNING_CHARS } from "@/lib/core";
 import { createAppStore, type AppState } from "./app-store";
 
 /**
@@ -16,6 +17,14 @@ let saveFailureReported = false;
 
 /** A fixed id lets the warning be taken down again once saving recovers. */
 const SAVE_FAILURE_TOAST_ID = "save-failure";
+
+/** So the "nearly full" warning shows once per launch, not on every tap. */
+let nearlyFullReported = false;
+
+/** The browser's "this site has used all its storage" error. Older Firefox used its own name. */
+function isStorageFull(error: unknown): boolean {
+  return error instanceof DOMException && (error.name === "QuotaExceededError" || error.name === "NS_ERROR_DOM_QUOTA_REACHED");
+}
 
 const deviceStorage: StateStorage = {
   getItem: (key) => {
@@ -33,12 +42,24 @@ const deviceStorage: StateStorage = {
         toast.dismiss(SAVE_FAILURE_TOAST_ID);
         saveFailureReported = false;
       }
+      // The completion log only grows, and the browser's space for this site is fixed. Nothing in
+      // the app can free space yet (see docs/scaling-and-algorithm-audit.md), so the best it can
+      // do is say so while a backup still captures everything.
+      if (value.length > STORAGE_WARNING_CHARS && !nearlyFullReported) {
+        nearlyFullReported = true;
+        toast.warning("This device's storage for Sincewhen is nearly full.", {
+          description: "Back up from Settings now, so nothing is lost if saving stops.",
+          duration: Infinity,
+        });
+      }
     } catch (error) {
       console.error("Sincewhen could not save to this device", error);
       if (!saveFailureReported) {
         saveFailureReported = true;
         toast.error("Changes are not being saved on this device.", {
-          description: "Private browsing or a full device can cause this. Back up from Settings now.",
+          description: isStorageFull(error)
+            ? "The storage this browser gives Sincewhen is full. Back up from Settings now."
+            : "Private browsing or blocked site data can cause this. Back up from Settings now.",
           duration: Infinity,
           id: SAVE_FAILURE_TOAST_ID,
         });

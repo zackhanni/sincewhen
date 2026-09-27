@@ -5,7 +5,14 @@ import { useRef, useState, useSyncExternalStore, type ChangeEvent, type ReactNod
 import { DownloadIcon, Share2Icon, UploadIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { backupFileName, buildBackupText, readBackupText, summarizeData, type BackupReadResult } from "@/lib/backup/backup";
+import {
+  backupFileName,
+  buildBackupText,
+  buildCompactBackupText,
+  readBackupText,
+  summarizeData,
+  type BackupReadResult,
+} from "@/lib/backup/backup";
 import { downloadTextFile, makeShareableFile, shareFile } from "@/lib/backup/send-file";
 import { MAX_BACKUP_FILE_BYTES, daysBetween } from "@/lib/core";
 import {
@@ -163,7 +170,7 @@ export function SettingsScreen() {
     // Importing replaces everything, so keep what is being replaced. It is not shown anywhere;
     // it exists so a wrong import can be recovered from by hand.
     try {
-      window.localStorage.setItem(BEFORE_IMPORT_KEY, buildBackupText(data, today));
+      window.localStorage.setItem(BEFORE_IMPORT_KEY, buildCompactBackupText(data, today));
     } catch {
       // Storage full or unavailable: the import itself can still go ahead.
     }

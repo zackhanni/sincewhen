@@ -199,5 +199,13 @@ A promotional page at `/about`, first draft 2026-09-26. Details and open questio
   UI is missing.
 - **Snooze** a task without completing it.
 - **History view** and frequency suggestions from the completion log.
+- **Room for the completion log to grow.** The log only grows (~118 saved characters per
+  completion) and the browser gives the site about 5.24 million characters in all (measured in
+  Chrome). About 40,000 completions fill it beside ~300 items: 4-5 years of heavy use (10 daily
+  tasks plus 100 weekly), 15+ of typical use. The app warns at 4 million characters and says
+  plainly when saving fails, but nothing in it can free space. Options: a compact log format
+  (schema v2 with a migration; `batchId` is only needed for undo, so roughly 9 times the room),
+  or IndexedDB, likely together with Supabase sync. Either changes the saved and backup format:
+  old backups must still import. See `docs/scaling-and-algorithm-audit.md`.
 - **Templates** for common rooms. Until then, duplicate a subtree and edit the frequencies.
 - **Merge on import** instead of replace.

@@ -47,6 +47,15 @@ export function buildBackupText(data: AppData, today: CalendarDate, displaySetti
   return JSON.stringify({ exportedAt: today, ...data, ...(displaySettings && { displaySettings }) }, null, 2);
 }
 
+/**
+ * The same backup without the indentation, for the copy kept on the device before an import.
+ * That copy shares the browser's ~5 MB with the saved data, and indentation adds about 30%.
+ * It still reads back with `readBackupText`.
+ */
+export function buildCompactBackupText(data: AppData, today: CalendarDate): string {
+  return JSON.stringify({ exportedAt: today, ...data });
+}
+
 /** Counts shown before an import, so the user can tell it is the backup they meant to pick. */
 export function summarizeData(data: AppData): BackupSummary {
   const tasks = data.nodes.filter((node) => node.frequency !== null).length;
