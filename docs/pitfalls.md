@@ -75,7 +75,10 @@ client component imports a library, check what that library costs every page. Se
 Measured in Chromium: a 4,284,739-character save plus 957,978 characters in another key filled
 it, and the next save threw `QuotaExceededError`. The saved data, the copy kept before an import
 (`sincewhen:before-import`) and the parked unreadable copy all count against it. The completion
-log is the part that grows, so the app warns at `STORAGE_WARNING_CHARS`. To test the full case,
+log is the part that grows, so the app warns when all keys together pass
+`STORAGE_WARNING_CHARS`. Counting only the saved data missed the pre-import copy, which can be as
+big as the data: after one import, saving could fail before the warning ever showed. To test the
+full case,
 fill the rest of storage exactly (a binary search to the last character): a filler that leaves
 even 1,000 characters free lets the next save through.
 

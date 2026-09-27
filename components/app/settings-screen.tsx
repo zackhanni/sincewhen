@@ -29,7 +29,7 @@ import { useToday } from "@/lib/hooks/use-today";
 import { isInstalled, requestPersistentStorage } from "@/lib/pwa/pwa";
 import { showError } from "@/lib/show-error";
 import { UNREADABLE_BACKUP_KEY } from "@/lib/store/app-store";
-import { appStore, useAppStore } from "@/lib/store/use-app-store";
+import { appStore, useAppStore, warnIfStorageNearlyFull } from "@/lib/store/use-app-store";
 import { cn } from "@/lib/utils";
 import { InstallSteps } from "./install-steps";
 import { openIntro } from "./intro";
@@ -170,10 +170,23 @@ export function SettingsScreen() {
     if (!pendingImport) return;
     // Importing replaces everything, so keep what is being replaced. It is not shown anywhere;
     // it exists so a wrong import can be recovered from by hand.
+    const safetyCopy = buildCompactBackupText(data, today);
     try {
-      window.localStorage.setItem(BEFORE_IMPORT_KEY, buildCompactBackupText(data, today));
+      window.localStorage.setItem(BEFORE_IMPORT_KEY, safetyCopy);
+      warnIfStorageNearlyFull(BEFORE_IMPORT_KEY, safetyCopy);
     } catch {
-      // Storage full or unavailable: the import itself can still go ahead.
+      // No room for the copy (or storage is blocked). If there is something to lose and no backup
+      // file was saved today, stop: the replaced tasks would be gone with no way back. A file saved
+      // today is itself the safety copy, so the import can go ahead, and an empty device has
+      // nothing to lose. Never a dead end: saving a backup file needs no storage.
+      const hasSomethingToLose = data.nodes.length > 0;
+      if (hasSomethingToLose && lastBackupDate !== today) {
+        toast.error("Save a backup file of your current tasks first.", {
+          description:
+            "This device has no room to keep a safety copy of them before they are replaced. Save or share a backup above, then restore again.",
+        });
+        return;
+      }
     }
     appStore.getState().replaceAllData(pendingImport.data);
     // Only the settings the file has; the rest stay as they are on this device.

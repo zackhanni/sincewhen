@@ -55,8 +55,9 @@ export const FIRST_BACKUP_NUDGE_DAYS = 7;
 export const MAX_BACKUP_FILE_BYTES = 10 * 1024 * 1024;
 
 /**
- * Warn once saved data passes this many characters. Browsers give a site about 5 million, and
- * the completion log only grows (about 118 characters per completion), so this leaves room to
- * back up before saving starts to fail. Heavy use takes years to get here.
+ * Warn once everything the site stores passes this many characters, all keys together (the copy
+ * kept before an import counts too). Browsers give a site about 5 million, and the completion log
+ * only grows (about 118 characters per completion), so this leaves room to back up before saving
+ * starts to fail. Heavy use takes years to get here.
  */
 export const STORAGE_WARNING_CHARS = 4_000_000;

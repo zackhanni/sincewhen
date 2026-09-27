@@ -41,7 +41,8 @@ Past the limit, every save throws. The app already showed a lasting warning, but
 "a full device", and nothing in the app can free space.
 
 - **1a — applied.** `lib/store/use-app-store.ts` now shows a one-time warning per launch once
-  the saved text passes `STORAGE_WARNING_CHARS` (4,000,000, `lib/core/constants.ts`), asking for
+  everything the site stores passes `STORAGE_WARNING_CHARS` (4,000,000, `lib/core/constants.ts`;
+  all keys together since the PR review, see below), asking for
   a backup while one still captures everything. When a save fails with `QuotaExceededError`,
   the message now says the browser's storage for the app is full; other failures still mention
   private browsing. Verified on a production build in headless Chromium: seeding 4,284,739
@@ -59,6 +60,18 @@ indented (1.29 times the saved size) in the same storage the app needs. It is no
 `buildCompactBackupText` (`lib/backup/backup.ts`), 23% smaller and still readable as a
 backup (new test: it round-trips through `readBackupText`). Whether it should expire is a
 product question and was not changed.
+
+#### Follow-up from the PR review (2026-09-27)
+- **The warning counted only the saved data.** The pre-import copy shares the same storage, so
+  after one import the real total was about twice what the warning saw. `warnIfStorageNearlyFull`
+  (`lib/store/use-app-store.ts`) now totals every key and runs after the main save and after the
+  copy is written. Verified: 2,264,310 characters of data plus a 2,264,251-character copy now
+  warns; reading the other keys costs about 0.02 ms per save.
+- **An import went ahead when the copy could not be saved.** With storage nearly full, the copy
+  fails while the main save (which replaces a value of about the same size) succeeds, so the old
+  tasks were gone with no copy. The import now stops unless the device is empty or a backup file
+  was saved today, and says to save one first; saving a file needs no storage, so it is never a
+  dead end. Verified in all three cases on a production build.
 
 #### 3. The Due tab renders every row — no action
 `components/app/due-screen.tsx` maps every item that wants attention to a row. The large

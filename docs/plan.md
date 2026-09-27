@@ -184,6 +184,8 @@ different sizes, so they are not part of `AppData`.
 - Import is an in-app file picker, validated by the same `parseAppData` used on load, with a
   preview (counts and export date) and a confirmation before replacing data. The data being
   replaced is first copied to `sincewhen:before-import` so a wrong import can be recovered by hand.
+  If there is no room for that copy, the import stops unless the device is empty or a backup file
+  was saved today (the file is then the copy); the message says to save one first.
 - Settings also offers the raw text kept under `sincewhen:unreadable-backup`, if there is any. **A texted import link does not work**: an installed PWA has separate storage
   from Safari, and a link opens Safari.
 

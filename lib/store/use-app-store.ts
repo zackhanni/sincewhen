@@ -15,6 +15,41 @@ const SAVE_FAILURE_TOAST_ID = "save-failure";
 /** So the "nearly full" warning shows once per launch, not on every tap. */
 let nearlyFullReported = false;
 
+/**
+ * Characters the site will keep in storage once `key` holds `value`, counting every key. They
+ * all share the browser's ~5 million, including the copy kept before an import, which can be as
+ * big as the saved data itself.
+ */
+function projectedStorageChars(key: string, value: string): number {
+  let total = key.length + value.length;
+  for (let index = 0; index < window.localStorage.length; index++) {
+    const otherKey = window.localStorage.key(index);
+    if (otherKey === null || otherKey === key) continue;
+    total += otherKey.length + (window.localStorage.getItem(otherKey)?.length ?? 0);
+  }
+  return total;
+}
+
+/**
+ * Warns once per launch when everything the site stores passes STORAGE_WARNING_CHARS. The
+ * completion log only grows and the browser's space is fixed, and nothing in the app can free
+ * space yet (see docs/scaling-and-algorithm-audit.md), so the best it can do is say so while a
+ * backup still captures everything. Call it after any write of the app's own keys.
+ */
+export function warnIfStorageNearlyFull(key: string, value: string): void {
+  if (nearlyFullReported) return;
+  try {
+    if (projectedStorageChars(key, value) <= STORAGE_WARNING_CHARS) return;
+  } catch {
+    return; // Storage cannot be read; a failed save reports that on its own.
+  }
+  nearlyFullReported = true;
+  toast.warning("This device's storage for Sincewhen is nearly full.", {
+    description: "Back up from Settings now, so nothing is lost if saving stops.",
+    duration: Infinity,
+  });
+}
+
 /** The browser's "this site has used all its storage" error. Older Firefox used its own name. */
 function isStorageFull(error: unknown): boolean {
   return error instanceof DOMException && (error.name === "QuotaExceededError" || error.name === "NS_ERROR_DOM_QUOTA_REACHED");
@@ -42,16 +77,7 @@ const deviceStorage: StateStorage = {
         toast.dismiss(SAVE_FAILURE_TOAST_ID);
         saveFailureReported = false;
       }
-      // The completion log only grows, and the browser's space for this site is fixed. Nothing in
-      // the app can free space yet (see docs/scaling-and-algorithm-audit.md), so the best it can
-      // do is say so while a backup still captures everything.
-      if (value.length > STORAGE_WARNING_CHARS && !nearlyFullReported) {
-        nearlyFullReported = true;
-        toast.warning("This device's storage for Sincewhen is nearly full.", {
-          description: "Back up from Settings now, so nothing is lost if saving stops.",
-          duration: Infinity,
-        });
-      }
+      warnIfStorageNearlyFull(key, value);
     } catch (error) {
       console.error("Sincewhen could not save to this device", error);
       if (!saveFailureReported) {
