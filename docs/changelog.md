@@ -13,7 +13,11 @@ backup import size cap), [scaling-and-algorithm-audit.md](scaling-and-algorithm-
 bugs: a stuck Due filter after a move, and plurals in Settings),
 [pagespeed-audit.md](pagespeed-audit.md) (`/about` 94 → 99; accessibility 100 with tasks loaded,
 light and dark), [seo.md](seo.md) (only `/about` indexed, sitemap, robots, structured data,
-share image). Then this docs condense: the changelog, and two tiers in pitfalls.md.
+share image). Then this docs condense (the changelog, and two tiers in pitfalls.md) and a
+refreshed [portfolio-writeup.md](portfolio-writeup.md), with the first live before and after:
+accessibility 96 to 100 with tasks loaded. Two review rounds: an import now stops when there is
+no room for a safety copy (unless the device is empty or a backup was saved today), and the
+security docs no longer claim the CSP stops all data leaving the page.
 **Why:** before the public launch.
 **Pitfalls / don't redo:** "zod logs a CSP violation on every page unless it is imported through
 `lib/core/zod.ts`", "The browser's storage for the app is about 5.24 million characters, shared
