@@ -1,12 +1,14 @@
 "use client";
 
-import { useForm } from "@tanstack/react-form";
+import { useRef, useState } from "react";
+import { useForm, useStore } from "@tanstack/react-form";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   MAX_FREQUENCY_COUNT,
   MAX_NAME_LENGTH,
+  convertFrequency,
   isValidCalendarDate,
   todayCalendarDate,
   type CalendarDate,
@@ -14,6 +16,7 @@ import {
   type FrequencyUnit,
   type TaskNode,
 } from "@/lib/core";
+import { formatFrequency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 /** What the form hands back. `lastCompleted` is left out when the item does not repeat. */
@@ -60,11 +63,19 @@ type NodeFormProps = {
   node?: TaskNode;
   /** Whether a brand-new item starts as a repeating task (true) or a plain folder (false). */
   startsRepeating: boolean;
+  /** A top-level item is usually a location or a category, which changes the example name shown. */
+  atTopLevel: boolean;
   submitLabel: string;
   onSubmit: (result: NodeFormResult) => void;
 };
 
-export function NodeForm({ node, startsRepeating, submitLabel, onSubmit }: NodeFormProps) {
+/** The greyed-out example in the empty name box, matched to what is being added. */
+function namePlaceholder(repeats: boolean, atTopLevel: boolean): string {
+  if (repeats) return "Change the air filter";
+  return atTopLevel ? "Home, Work, or Cleaning" : "Kitchen";
+}
+
+export function NodeForm({ node, startsRepeating, atTopLevel, submitLabel, onSubmit }: NodeFormProps) {
   const today = todayCalendarDate();
 
   const form = useForm({
@@ -96,6 +107,38 @@ export function NodeForm({ node, startsRepeating, submitLabel, onSubmit }: NodeF
     },
   });
 
+  // Read here, above the fields, because the name box's example depends on it.
+  const isRepeating = useStore(form.store, (state) => state.values.repeats);
+
+  // Changing the unit of a saved task keeps the same length of time: "every 2 weeks" switched
+  // to days becomes "every 14 days", ready to adjust. Each switch converts from the saved
+  // frequency, not from the previous switch, so flicking through the units and back returns the
+  // original number instead of piling up rounding (2 weeks -> 1 month -> 4 weeks).
+  // Once the user types a number, or when adding a new task, nothing is converted: the number is
+  // meant for the unit picked next. Someone who types "2" and then picks "weeks" means 2 weeks.
+  const convertFrom = useRef<Frequency | null>(node?.frequency ?? null);
+  // Set when a unit has no close equivalent (3 years in days is over the limit): the number is
+  // cleared so it cannot be saved by accident, and this says why.
+  const [conversionNote, setConversionNote] = useState<string | null>(null);
+
+  const changeUnit = (unit: FrequencyUnit) => {
+    const saved = convertFrom.current;
+    if (!saved) return;
+    const result = convertFrequency(saved, unit);
+    if (result.ok) {
+      form.setFieldValue("count", result.frequency.count);
+      setConversionNote(null);
+      return;
+    }
+    form.setFieldValue("count", Number.NaN);
+    const why = {
+      "over-maximum": `is more than ${MAX_FREQUENCY_COUNT} ${unit}s`,
+      "less-than-one": `is less than 1 ${unit}`,
+      "not-whole": `is not a whole number of ${unit}s`,
+    }[result.reason];
+    setConversionNote(`${formatFrequency(saved)} ${why}. Enter how many ${unit}s.`);
+  };
+
   return (
     <form
       onSubmit={(event) => {
@@ -113,7 +156,7 @@ export function NodeForm({ node, startsRepeating, submitLabel, onSubmit }: NodeF
                 value={field.state.value}
                 onChange={(event) => field.handleChange(event.target.value)}
                 onBlur={field.handleBlur}
-                placeholder="Change the air filter"
+                placeholder={namePlaceholder(isRepeating, atTopLevel)}
                 autoComplete="off"
                 // 16px text stops iOS Safari zooming the page in when an input is focused.
                 className="h-9 text-base"
@@ -135,7 +178,7 @@ export function NodeForm({ node, startsRepeating, submitLabel, onSubmit }: NodeF
               <span>
                 <span className="font-medium">Repeats</span>
                 <span className="block text-muted-foreground">
-                  Off makes this a room or folder: it holds other items but cannot be checked off.
+                  Off makes this a folder: it holds other items but cannot be checked off.
                 </span>
               </span>
             </label>
@@ -167,7 +210,11 @@ export function NodeForm({ node, startsRepeating, submitLabel, onSubmit }: NodeF
                             min={1}
                             max={MAX_FREQUENCY_COUNT}
                             value={Number.isNaN(field.state.value) ? "" : field.state.value}
-                            onChange={(event) => field.handleChange(event.target.valueAsNumber)}
+                            onChange={(event) => {
+                              convertFrom.current = null;
+                              setConversionNote(null);
+                              field.handleChange(event.target.valueAsNumber);
+                            }}
                             onBlur={field.handleBlur}
                             className="h-9 text-base"
                           />
@@ -180,7 +227,11 @@ export function NodeForm({ node, startsRepeating, submitLabel, onSubmit }: NodeF
                         <select
                           aria-label="Unit"
                           value={field.state.value}
-                          onChange={(event) => field.handleChange(event.target.value as FrequencyUnit)}
+                          onChange={(event) => {
+                            const unit = event.target.value as FrequencyUnit;
+                            changeUnit(unit);
+                            field.handleChange(unit);
+                          }}
                           className={cn(nativeControl, "flex-1")}
                         >
                           {UNITS.map((unit) => (
@@ -192,6 +243,7 @@ export function NodeForm({ node, startsRepeating, submitLabel, onSubmit }: NodeF
                       )}
                     </form.Field>
                   </div>
+                  {conversionNote && <p className="text-sm text-muted-foreground">{conversionNote}</p>}
                 </Field>
 
                 <Field>

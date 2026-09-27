@@ -6,17 +6,19 @@ import { Suspense, useEffect, type ReactNode } from "react";
 import { FolderTreeIcon, ListChecksIcon, SettingsIcon } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { isOverdue, listAttentionItems } from "@/lib/core";
+import { useDisplaySettings } from "@/lib/hooks/use-display-settings";
 import { useToday } from "@/lib/hooks/use-today";
 import { useTreeIndex } from "@/lib/hooks/use-tree-index";
 import { registerServiceWorker, updateAppBadge } from "@/lib/pwa/pwa";
 import { cn } from "@/lib/utils";
 import { appStore, useAppStore } from "@/lib/store/use-app-store";
+import { Intro, showIntroOnLaunch } from "./intro";
 import { NodeSheet } from "./node-sheet";
 import { SheetProvider } from "./sheet-context";
 
 const TABS = [
-  { href: "/", label: "Due", icon: ListChecksIcon, isActive: (path: string) => path === "/" },
-  { href: "/rooms", label: "Rooms", icon: FolderTreeIcon, isActive: (path: string) => path.startsWith("/rooms") },
+  { href: "/due", label: "Due", icon: ListChecksIcon, isActive: (path: string) => path === "/due" },
+  { href: "/rooms", label: "Folders", icon: FolderTreeIcon, isActive: (path: string) => path.startsWith("/rooms") },
   { href: "/settings", label: "Settings", icon: SettingsIcon, isActive: (path: string) => path === "/settings" },
 ];
 
@@ -26,6 +28,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const hasHydrated = useAppStore((state) => state.hasHydrated);
   const loadError = useAppStore((state) => state.loadError);
   const hasUnreadableBackup = useAppStore((state) => state.hasUnreadableBackup);
+  const { theme } = useDisplaySettings();
 
   // Saved data is read here, after the first render, because the server has no device storage
   // to read from. See `skipHydration` in app-store.ts.
@@ -33,6 +36,12 @@ export function AppShell({ children }: { children: ReactNode }) {
     void appStore.persist.rehydrate();
     registerServiceWorker();
   }, []);
+
+  // The intro decides whether to open only once saved data has loaded: its last page offers the
+  // examples, which only make sense on an empty app.
+  useEffect(() => {
+    if (hasHydrated) showIntroOnLaunch();
+  }, [hasHydrated]);
 
   // Keep the number on the home-screen icon in step with what the Due tab would show for all
   // locations. `today` is included so the count rolls over when a new day starts.
@@ -48,9 +57,11 @@ export function AppShell({ children }: { children: ReactNode }) {
     <SheetProvider>
       {/* `viewportFit: "cover"` lets the page run under the status bar and notch, so the top needs
           the same safe-area padding the tab bar has at the bottom. It is 0 where not needed. */}
-      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col pt-[env(safe-area-inset-top)]">
+      {/* Phone width by default. Wider screens get more room, which the lists fill with columns
+          (see ROW_LIST); 64rem stops lines getting too long to read on a desktop. */}
+      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col pt-[env(safe-area-inset-top)] sm:max-w-5xl">
         {(loadError || hasUnreadableBackup) && (
-          <Link href="/settings" role="alert" className="block border-b border-red-300 bg-red-50 p-3 text-sm text-red-900">
+          <Link href="/settings" role="alert" className="block border-b border-red-300 bg-red-50 p-3 text-sm text-red-900 dark:border-red-800 dark:bg-red-950 dark:text-red-100">
             <p className="font-semibold">Some saved data could not be read.</p>
             <p>
               Nothing was deleted: the original was kept on this device.
@@ -88,7 +99,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         <NodeSheet />
       </Suspense>
       {/* Above the tab bar, so the Undo button is never hidden behind it. */}
-      <Toaster position="top-center" />
+      <Intro />
+      {/* The toast colors follow the app's own choice, not only the device's. */}
+      <Toaster position="top-center" theme={theme} />
     </SheetProvider>
   );
 }

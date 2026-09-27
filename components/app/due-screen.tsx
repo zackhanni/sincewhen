@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { isBackupDue } from "@/lib/backup/backup";
 import {
-  BACKUP_NUDGE_DAYS,
   daysBetween,
   getChildren,
   isOverdue,
@@ -14,7 +14,8 @@ import { useTreeIndex } from "@/lib/hooks/use-tree-index";
 import { useAppStore } from "@/lib/store/use-app-store";
 import { cn } from "@/lib/utils";
 import { InstallHint } from "./install-hint";
-import { NodeRow } from "./node-row";
+import { NodeRow, ROW_LIST } from "./node-row";
+import { StartWithExamplesButton } from "./start-with-examples-button";
 
 /** The home screen: everything overdue or due soon, most urgent first, across all rooms. */
 export function DueScreen() {
@@ -24,12 +25,10 @@ export function DueScreen() {
   const setActiveLocation = useAppStore((state) => state.setActiveLocation);
 
   const lastBackupDate = useAppStore((state) => state.lastBackupDate);
-  const taskCount = useAppStore((state) => state.data.nodes.length);
+  const data = useAppStore((state) => state.data);
 
   const locations = getChildren(index, null);
-  // Nothing to lose yet means nothing to nag about. After that: never backed up, or too long ago.
-  const backupIsStale =
-    taskCount > 0 && (lastBackupDate === null || daysBetween(lastBackupDate, today) >= BACKUP_NUDGE_DAYS);
+  const backupIsStale = isBackupDue(data, lastBackupDate, today);
   const items = listAttentionItems(index, activeLocationId, today);
   const overdueCount = items.filter((item) => isOverdue(item.timing.status)).length;
 
@@ -48,7 +47,7 @@ export function DueScreen() {
       <InstallHint />
 
       {backupIsStale && (
-        <Link href="/settings" className="rounded-lg border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-950">
+        <Link href="/settings" className="rounded-lg border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-950 dark:border-yellow-700 dark:bg-yellow-950 dark:text-yellow-100">
           <span className="font-semibold">Time to back up. </span>
           {lastBackupDate ? `Your last backup was ${daysBetween(lastBackupDate, today)} days ago.` : "You have never backed up."}{" "}
           <span className="underline">Open Settings</span>
@@ -76,7 +75,7 @@ export function DueScreen() {
       )}
 
       {items.length > 0 ? (
-        <ul className="flex flex-col gap-2">
+        <ul className={ROW_LIST}>
           {items.map(({ node, timing, path }) => (
             <NodeRow
               key={node.id}
@@ -92,12 +91,14 @@ export function DueScreen() {
             <>
               <p className="mb-2 font-medium text-foreground">Welcome to Sincewhen</p>
               <p>
-                Add a location and some tasks in{" "}
+                Add a location or category and some tasks in{" "}
                 <Link href="/rooms" className="underline">
-                  Rooms
+                  Folders
                 </Link>
                 . Tasks appear here when they come due.
               </p>
+              <p className="mt-4 mb-2">Or try it with a set of common chores. They are yours to keep or change.</p>
+              <StartWithExamplesButton />
             </>
           ) : (
             <p>All caught up. Nothing is due soon.</p>

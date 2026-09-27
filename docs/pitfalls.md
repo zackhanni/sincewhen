@@ -45,6 +45,15 @@ Without one the production build fails, because the page can no longer be preren
 `tsc` reported a missing `app/rooms/[id]/page.js` after the folder was deleted. `pnpm build`
 (or `pnpm dev`) regenerates the types; the error is not in the source.
 
+A running `pnpm dev` keeps its own copy in `.next/dev/types`, and `tsc` and `pnpm build` read it
+too. After routes moved into the `(app)` group, a dev server that was already running never
+rewrote it, and the build failed on `app/rooms/page.js`. Restart the dev server after moving or
+deleting a route (or move `.next/dev/types/validator.ts` aside; it is generated).
+
+### A production server does not serve files added to `public/` after it started
+`next start` reads `public/` once. Screenshots saved there afterwards answered 404, and
+`next/image` reported "The requested resource isn't a valid image" (400). Restart the server.
+
 ### A page cannot tell whether a download was kept
 `downloadTextFile` fires and forgets, so "Save backup file" marks the backup as done the moment
 it starts. Sharing is different: `navigator.share` rejects with `AbortError` when the sheet is
@@ -60,6 +69,11 @@ and reads the contents rather than trusting the type. Feature-detect; never assu
 `/settings` had to be added to `PAGES` in `sw.js`. Forgetting means the page fails offline, with
 no error during development.
 
+### `/` is a launcher, not the Due tab
+Installed icons open `start_url` (`/`), so `/` decides the start screen and replaces itself
+with it. The Due tab lives at `/due`. A tab or link pointing at `/` would bounce the user to
+whatever the start screen is instead of where they tapped. Link to `/due` or `/rooms`.
+
 ### A fixed cache name grows forever
 `sw.js` does not change between deploys, so with a constant cache name `install` and `activate`
 never re-ran and every deploy's hashed build files piled up in one cache until quota ran out. The
@@ -71,6 +85,29 @@ fail a request whose network fetch succeeded. (Found by CodeRabbit on PR #3.)
 The returned Promise is truthy. A cache-upgrade check written that way "passed" while the old
 cache was still there, under a log line claiming it was deleted. Poll from Node instead, and make
 the script throw when the expected state never arrives.
+
+### The old address keeps its own data
+Browser storage belongs to one address. Moving from `sincewhen-ruby.vercel.app` to
+`sincewhen.webwizarddev.com` started an empty app, and an installed home-screen icon keeps
+opening the address it was installed from. `next.config.ts` redirects the old address. It was
+a temporary 307 at first, so the old data stayed reachable by removing the rule. Since
+2026-09-26 it is a permanent 308: the only data there (Zack's) was backed up and moved, and
+the old address is retired. Browsers cache a permanent redirect, so from then on anything
+saved at the old address is out of reach in that browser. Old addresses are listed in
+`RETIRED_HOSTS` in `lib/site.ts`; never link to them.
+
+### The icon badge needs notification permission on iOS
+`navigator.setAppBadge` runs without error, but iOS shows a home-screen web app's badge only
+after the user grants notification permission, which the app never asks for. Chrome on
+Android has no Badging API support at all. Don't describe the badge as working until a phone
+shows it (WebKit blog, 2023-02-16; MDN browser-compat-data).
+
+### Brave on iPhone cannot install the app, and Safari moved the button
+Brave on iPhone has no "Add to Home Screen", not even under Share, and it does not name itself
+to the page, so it cannot be detected. On iOS 26 Safari's Share is inside the ••• menu, with "Add
+to Home Screen" under View More. The old hint ("tap Share") was wrong in both. The steps now live
+in one place (`install-steps.tsx`) and end with "Can't find it? Open this page in Safari".
+(Zack, on his iPhone, 2026-09-26.)
 
 ### Do not ask for persistent storage on page load
 Firefox answers `navigator.storage.persist()` with a permission prompt. It is now requested after
@@ -86,6 +123,22 @@ the user adds an item or restores a backup. (Found by CodeRabbit on PR #3.)
 `lastCompleted` is `YYYY-MM-DD` in the user's local time. `new Date("2026-03-01")` parses as UTC
 midnight, which is the previous day in US timezones — always parse and format through the helpers
 in `lib/core`, never with the `Date` constructor on a bare date string.
+
+### Converting a frequency from its last conversion piles up rounding
+Switching a saved "every 2 weeks" to days, then months, then weeks gave 14 days, 1 month, then 4
+weeks: each step rounded the previous one. `node-form.tsx` now always converts from the saved
+frequency, so going back to the original unit restores the original number.
+
+### A rounded conversion can be a different schedule wearing the same label
+Rounding to a bigger unit hides large errors: 8 months becomes "1 year" (50% off), 18 months
+"2 years". Even the bounds check passed those. `convertFrequency` accepts a whole number only
+within `CONVERSION_TOLERANCE` (5%) of the exact value; anything else asks the user. Months
+never divide into days or weeks exactly, which is why there is a tolerance at all.
+
+### Dated examples must work on every day, not just today
+The examples are dated "N days ago", and whether 35 days ago is overdue for a monthly task
+depends on how long the month was. `examples.test.ts` builds them for every day of two years
+(one a leap year) and checks every color appears. It was seen to fail when one date was moved.
 
 ### A `YYYY-MM-DD` regex is a shape check, not a validity check
 It accepts `2026-02-30`, which `Date` silently rolls to March 2. Validate by constructing the
@@ -124,6 +177,24 @@ Display order comes from `sortOrder` and from urgency. Operations append to the 
 ### A task completed today must stay green
 A daily task is always "due within 1 day". Without the `progress > 0` guard in `status.ts` it
 turns yellow the instant it is checked off.
+
+## Accessibility
+
+### An empty app passes contrast checks that a used one fails
+The colored rows and room badges only appear once tasks are overdue, so Lighthouse on a fresh
+install scores 100 while the same screens with data scored 96: gray secondary text on a
+long-neglected row's pale-red background (4.33:1) and white on the orange and red room badges
+(about 2.8:1 and 3.8:1), all under the 4.5:1 minimum for small text. Fixed in
+`lib/status-styles.ts` and `components/app/node-row.tsx`. Measure accessibility with made-up
+tasks loaded (seed `localStorage["sincewhen"]` in a throwaway browser profile, then run
+Lighthouse against that browser with `--disable-storage-reset`), including a long-overdue task
+and rooms at every badge level.
+
+### A color that passes in light mode can fail in dark
+`text-yellow-700` is fine on a white card and unreadable on a near-black one. Every hard-coded
+text color needs a `dark:` partner (see `lib/status-styles.ts`). Checked with axe-core in
+Playwright on every screen in both themes and both sizes, with data covering every status and
+room level; a control run with the old yellow on a dark card was flagged, so the zero is real.
 
 ## State and UI
 
@@ -165,15 +236,27 @@ sending null, so turning a task into a folder cannot wipe its history.
 A phone app is resumed, not reloaded. `useToday` re-reads the date on focus / visibility change;
 do not cache `todayCalendarDate()` at module level.
 
+### React's development remount wipes what the head script set on `<html>`
+The script in `layout.tsx` sets the `dark` class and `data-size` before the first paint. In
+development, Strict Mode remounts once and resets `<html>` to its JSX attributes, removing both.
+`DisplaySettingsSync`, mounted by the root layout, re-applies them in a `useLayoutEffect`;
+production does not need it but it is harmless. `<html>` also carries `suppressHydrationWarning`, because the server's HTML and the
+page React finds differ on purpose. (From the Next.js guide "Preventing flash before hydration".)
+
+### The intro covers every screen on a fresh launch
+It opens on every page load until dismissed, and a modal makes the rest of the page unclickable.
+A browser test that loads a page must seed `localStorage["sincewhen:intro-dismissed"] = "1"`, or
+close the intro first. `page.goto` counts as a new launch; clicking a tab does not.
+
 ### Tailwind cannot see class names built from pieces
-`border-${colour}-500` is never generated. `lib/status-styles.ts` writes every class in full.
+`border-${color}-500` is never generated. `lib/status-styles.ts` writes every class in full.
 
 ## Tooling
 
 ### CodeRabbit silently skips stacked PRs, and its check still says "pass"
 It reviews only PRs whose base is the default branch. PRs #3-#5 reported "Review skipped: reviews
 are disabled for this base branch" and #2 "Review rate limited" — all with a green check and zero
-comments, which looks exactly like a clean review. Read the check's description, not its colour.
+comments, which looks exactly like a clean review. Read the check's description, not its color.
 A stacked PR gets reviewed only after the one below merges and it is retargeted; then comment
 `@coderabbitai review`. The plan allows 3 reviews per hour, re-reviews included.
 
@@ -189,6 +272,26 @@ app silently fell back to a serif font. It must point at the variable `next/font
 `--font-sans: var(--font-geist-sans)`. Only a screenshot revealed it — typecheck, lint and tests
 were all green.
 
+### Preloading a light/dark image pair downloads both
+`priority` (deprecated in Next.js 16 for `preload`) adds a preload link per image, so the hidden
+theme's screenshot downloaded too: two preload links and both files, measured. Leave both
+variants lazy (a hidden lazy image is never fetched) and give the visible one
+`fetchPriority="high"`, as the Next.js image docs say under "Theme detection".
+
+### `cn` from the `cn` package is the project's helper
+`lib/utils.ts` is `export { cn } from "cn"`, and the shadcn CLI (base-nova style) writes
+`import { cn } from "cn"` into every `components/ui` file. The package is a clsx +
+tailwind-merge replacement: `cn("sm:max-w-sm", "sm:max-w-md")` gives `"sm:max-w-md"`. A review
+suggested switching `dialog.tsx` to `@/lib/utils` as if they were different; they are not, and
+the ui files must stay as generated.
+
+### A link styled as a button needs `cn(buttonVariants(...))`
+`buttonVariants` returns the base style's `border-transparent` and the outline style's
+`border-border` together, and in the generated CSS the transparent one wins. A `<Link>` given
+the bare string had no border in light mode and looked like plain text (the white background
+matches the card). `Button` runs its classes through `cn`, which drops the losing one; a link
+must do the same: `className={cn(buttonVariants({ variant: "outline" }))}`.
+
 ### Remove shadcn components you do not use
 `shadcn add` is cheap, so unused files pile up. Six were added and deleted in Phase 3. Native
 `<select>` and `<input type="date">` are used on purpose: on a phone they open the system
@@ -203,6 +306,19 @@ that this stops working in a future major. With `.mts`, `__dirname` does not exi
 `AGENTS.md` carries a block generated by `next dev` pointing at the bundled docs in
 `node_modules/next/dist/docs/`. Read the relevant guide there before using a Next.js API. The
 block is re-created if removed, so keep it committed.
+
+### A touch test that passes on the old code proves nothing
+Checks for the swipe's second-finger and open-sheet cases passed against the code they were
+meant to catch. Chrome DevTools' `Input.dispatchTouchEvent` did not produce the multi-finger
+`touchend` (with the second finger in `changedTouches`) that the bug needs. Synthetic
+`TouchEvent`s dispatched on `document`, with explicit `touches` and `changedTouches`, did: the
+old code navigated, the fixed code stayed. Run a new gesture test against the old code once.
+
+### Next.js will not start a second dev server in the same folder
+`pnpm dev --port 3461` exited with "You can access the existing server at http://localhost:3001"
+because Zack's own `pnpm dev` was already running. Find it with `lsof -ti :3001` and check its
+folder (`lsof -a -p <pid> -d cwd`) before trusting it; it hot-reloads, so it serves the current
+code. Do not stop someone else's server to start your own.
 
 ### shadcn was initialised with the `base-nova` style (Base UI, not Radix)
 Components in `components/ui` are built on Base UI. Most online shadcn examples assume Radix:

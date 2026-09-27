@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { addFrequency, daysBetween, isValidCalendarDate, toCalendarDate, toLocalDate } from "./dates";
+import {
+  addFrequency,
+  convertFrequency,
+  daysBetween,
+  isValidCalendarDate,
+  toCalendarDate,
+  toLocalDate,
+} from "./dates";
 
 describe("isValidCalendarDate", () => {
   it("accepts real dates, including a leap day", () => {
@@ -66,5 +73,41 @@ describe("daysBetween", () => {
   it("is not thrown off by a daylight-saving change", () => {
     // US clocks move forward on 2026-03-08, making that day 23 hours long.
     expect(daysBetween("2026-03-07", "2026-03-09")).toBe(2);
+  });
+});
+
+describe("convertFrequency", () => {
+  const converted = (count: number, unit: "day" | "week" | "month" | "year") => ({ ok: true, frequency: { count, unit } });
+  const refused = (reason: string) => ({ ok: false, reason });
+
+  it("converts exact equivalents", () => {
+    expect(convertFrequency({ count: 2, unit: "week" }, "day")).toEqual(converted(14, "day"));
+    expect(convertFrequency({ count: 1, unit: "year" }, "month")).toEqual(converted(12, "month"));
+    expect(convertFrequency({ count: 24, unit: "month" }, "year")).toEqual(converted(2, "year"));
+  });
+
+  it("converts months and years to the nearest day or week, which is always close", () => {
+    expect(convertFrequency({ count: 2, unit: "month" }, "day")).toEqual(converted(61, "day"));
+    expect(convertFrequency({ count: 1, unit: "year" }, "day")).toEqual(converted(365, "day"));
+    expect(convertFrequency({ count: 3, unit: "month" }, "week")).toEqual(converted(13, "week"));
+    expect(convertFrequency({ count: 30, unit: "day" }, "month")).toEqual(converted(1, "month"));
+  });
+
+  it("refuses when rounding to a bigger unit would change the interval", () => {
+    // Each of these would save a noticeably different schedule under the same-looking label.
+    expect(convertFrequency({ count: 8, unit: "month" }, "year")).toEqual(refused("not-whole")); // 1 year: 50% off
+    expect(convertFrequency({ count: 18, unit: "month" }, "year")).toEqual(refused("not-whole")); // 2 years: 33% off
+    expect(convertFrequency({ count: 10, unit: "day" }, "week")).toEqual(refused("not-whole")); // 1 week: 30% off
+    expect(convertFrequency({ count: 1, unit: "month" }, "week")).toEqual(refused("not-whole")); // 4 weeks: 8% off
+  });
+
+  it("refuses instead of clamping when no valid count is close", () => {
+    // Clamping would save a different interval: 999 days is 3 months short of 3 years.
+    expect(convertFrequency({ count: 3, unit: "year" }, "day")).toEqual(refused("over-maximum"));
+    expect(convertFrequency({ count: 1, unit: "day" }, "year")).toEqual(refused("less-than-one"));
+  });
+
+  it("still converts right up to the maximum count", () => {
+    expect(convertFrequency({ count: 142, unit: "week" }, "day")).toEqual(converted(994, "day"));
   });
 });

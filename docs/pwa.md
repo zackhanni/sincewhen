@@ -6,13 +6,32 @@ when it is opened in a browser tab.
 
 ## Install
 
-**iPhone / iPad (Safari):** open the site, tap Share, then "Add to Home Screen". Open the app
-from the home-screen icon from then on — data created in the Safari tab does not carry over,
-because the installed app has its own storage. Export first if you already have data in Safari.
+**iPhone / iPad (Safari):** open the site, tap Share, then "Add to Home Screen". On iOS 26 Share
+is inside the ••• menu, and "Add to Home Screen" is under View More: ••• → Share → View More →
+Add to Home Screen → Add (Zack, 2026-09-26). Open the app from the home-screen icon from then on
+— data created in the Safari tab does not carry over, because the installed app has its own
+storage. Export first if you already have data in Safari.
+
+**Other iPhone browsers:** Brave has no "Add to Home Screen" at all, not even under Share (Zack,
+2026-09-26), and it does not name itself to the page, so the app cannot detect it and point to
+Safari. The steps (`components/app/install-steps.tsx`, shown in the install hint, Settings and
+the intro) therefore end with a general "Can't find it? Open this page in Safari".
 
 **Android (Chrome):** open the site, then menu, then "Install app" (or "Add to Home screen").
 
 **Desktop (Chrome / Edge):** the install icon at the right of the address bar.
+
+## The QR code
+
+On a computer, the intro's last page and the landing page show `public/qr-code.svg`, a QR code
+for `SITE_URL` in `lib/site.ts` (`https://sincewhen.webwizarddev.com`). It is a static file made
+once with the `qrcode` npm package. If the address ever changes, remake it:
+
+```sh
+npx -y qrcode -t svg -o public/qr-code.svg "https://new.address"
+```
+
+Then check it scans. It is always drawn black on white, dark mode included.
 
 ## Verify it worked
 
@@ -62,6 +81,11 @@ worker to the browser: it installs, fills `sincewhen-<build id>`, and only then 
 delete the previous cache. There is nothing to bump by hand, and old build files cannot pile up.
 
 Adding a page to the app still means adding it to `PAGES` in `sw.js`, or it will not open offline.
+
+The version in Settings > About (`NEXT_PUBLIC_APP_VERSION`) is the date of the built commit, read
+with `git log` in `next.config.ts`. If git is not available in Vercel's build, it falls back to the
+build date, which on a deploy-on-merge setup is the same day (UTC). Check the live Settings screen
+after the first deploy to see which one it used.
 
 ## Alternatives, if a PWA stops being enough
 

@@ -7,7 +7,7 @@ import type { TaskNode } from "./types";
 const summarize = (nodes: TaskNode[], id = "room") => summarizeNode(buildTreeIndex(nodes), id, TODAY);
 const dueTasks = (count: number) => Array.from({ length: count }, (_, i) => dueTask(`due${i}`, "room"));
 
-describe("summarizeNode — room colour", () => {
+describe("summarizeNode — room color", () => {
   it("is green when empty or when everything is fine", () => {
     expect(summarize([folder("room", null)]).level).toBe("green");
     expect(summarize([folder("room", null), okTask("a", "room")]).level).toBe("green");

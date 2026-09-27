@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Sincewhen
 
-Recurring tasks that come due based on when they were last completed, organised as
+Recurring tasks that come due based on when they were last completed, organized as
 locations > rooms > tasks > sub-tasks. Client-only for now: data lives on the device.
 
 ## Read first
@@ -20,6 +20,8 @@ locations > rooms > tasks > sub-tasks. Client-only for now: data lives on the de
 - `docs/pitfalls.md` — traps already hit. **Add an entry whenever you hit a new one.**
 - `docs/roadmap.md` — phase checklists and future additions. Tick items as they land.
 - `docs/pwa.md` — install steps and alternatives.
+- `docs/landing-page.md` — the promotional page at `/about`: where its copy lives, how its
+  screenshots are made, and its open questions.
 - `docs/portfolio-writeup.md` — public-facing copy (portfolio entry, Reddit post) and the
   domain-move checklist. Keep its numbers (tests, review findings) true when they change.
 
@@ -31,7 +33,9 @@ locations > rooms > tasks > sub-tasks. Client-only for now: data lives on the de
 - Dates are local calendar dates (`YYYY-MM-DD`). Never call `new Date()` on a bare date string;
   use the helpers in `lib/core`.
 - Never edit `components/ui/*`. Wrap or re-theme instead, so shadcn updates stay safe.
-- Tunable thresholds (status, room colour, depth limit) live in one constants file.
+- Tunable thresholds (status, room color, depth limit, unit conversion) live in one constants file.
+- The app's address is `SITE_URL` in `lib/site.ts`. Never hard-code it, and never link the
+  retired `sincewhen-ruby.vercel.app`.
 - Keep explanatory "why" comments; write so the purpose is obvious on first read.
 
 ## Commands

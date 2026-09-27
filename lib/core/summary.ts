@@ -14,7 +14,7 @@ export type RoomLevel = "green" | "yellow" | "orange" | "red" | "darkRed";
 export type RoomSummary = {
   /** Shown on the badge: how many overdue tasks are inside, at any depth. */
   overdueCount: number;
-  /** Drives the colour: like overdueCount, but a severe task counts double. */
+  /** Drives the color: like overdueCount, but a severe task counts double. */
   score: number;
   hasSevere: boolean;
   hasSoon: boolean;
@@ -35,7 +35,7 @@ export type AttentionItem = {
  * one thing to do, not four, so it must not inflate the room's count. A task that is NOT overdue
  * is still searched, because one of its sub-tasks can come due on its own.
  *
- * Both the room colour and the Due tab are built from this one walk, so the badge on a room
+ * Both the room color and the Due tab are built from this one walk, so the badge on a room
  * always matches the number of overdue rows the Due tab shows for it.
  */
 function collectAttentionItems(
@@ -54,9 +54,9 @@ function collectAttentionItems(
 }
 
 /**
- * Rolls a room (or any node) up into a colour and a badge count.
+ * Rolls a room (or any node) up into a color and a badge count.
  *
- * The colour comes from a COUNT of overdue tasks, not a percentage: a room whose only task is
+ * The color comes from a COUNT of overdue tasks, not a percentage: a room whose only task is
  * overdue should look milder than a room with three of ten overdue.
  */
 export function summarizeNode(index: TreeIndex, id: string, today: CalendarDate): RoomSummary {
@@ -120,7 +120,7 @@ export type ChildView = {
 
 /**
  * The rows for one screen: the children of `parentId`, in display order, with everything the UI
- * needs to colour them.
+ * needs to color them.
  *
  * - Tasks come first, most urgent on top. Folders come after, worst room on top.
  * - Inside a task, sub-tasks keep their manual order instead, because there they are steps

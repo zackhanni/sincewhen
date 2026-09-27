@@ -1,5 +1,6 @@
 import { addDays, addMonths, addWeeks, addYears, differenceInCalendarDays } from "date-fns";
-import type { Frequency } from "./types";
+import { CONVERSION_TOLERANCE, MAX_FREQUENCY_COUNT } from "./constants";
+import type { Frequency, FrequencyUnit } from "./types";
 
 /**
  * A calendar date in the user's local time, written "YYYY-MM-DD".
@@ -59,7 +60,7 @@ export function todayCalendarDate(now: Date = new Date()): CalendarDate {
  *
  * Months and years use calendar arithmetic, not day counts: 2 months after Jan 15 is Mar 15,
  * whatever the month lengths. When the target month is too short the day clamps to its last day
- * (Jan 31 + 1 month = Feb 28), which is date-fns' behaviour.
+ * (Jan 31 + 1 month = Feb 28), which is date-fns' behavior.
  */
 export function addFrequency(from: CalendarDate, frequency: Frequency): CalendarDate {
   const date = toLocalDate(from);
@@ -78,4 +79,41 @@ export function addFrequency(from: CalendarDate, frequency: Frequency): Calendar
 /** Whole calendar days from `from` to `to`; negative when `to` is earlier. Unaffected by DST. */
 export function daysBetween(from: CalendarDate, to: CalendarDate): number {
   return differenceInCalendarDays(toLocalDate(to), toLocalDate(from));
+}
+
+/**
+ * Average days in each unit, for converting a frequency between units. A year is the average
+ * Gregorian year and a month is a twelfth of it, so years and months convert exactly (1 year =
+ * 12 months) and a year comes out at 365 days after rounding.
+ */
+const AVERAGE_DAYS: Record<FrequencyUnit, number> = {
+  day: 1,
+  week: 7,
+  month: 365.2425 / 12,
+  year: 365.2425,
+};
+
+export type FrequencyConversion =
+  | { ok: true; frequency: Frequency }
+  /** No whole number of the new unit, from 1 to MAX_FREQUENCY_COUNT, comes close. */
+  | { ok: false; reason: "less-than-one" | "over-maximum" | "not-whole" };
+
+/**
+ * The same length of time in another unit, as a whole number: 2 weeks → 14 days, 2 months →
+ * 61 days, 3 months → 13 weeks. A convenience for editing, not date arithmetic: due dates still
+ * come from `addFrequency`, where "2 months" is never a day count.
+ *
+ * Refuses whenever the answer would be a different interval that looks like the same one, and
+ * the caller asks the user for the number instead: under 1 of the new unit (every day in
+ * years), over the maximum count (3 years is about 1,096 days), or not within
+ * CONVERSION_TOLERANCE of a whole number (8 months would round to 1 year).
+ */
+export function convertFrequency(frequency: Frequency, unit: FrequencyUnit): FrequencyConversion {
+  const days = frequency.count * AVERAGE_DAYS[frequency.unit];
+  const exact = days / AVERAGE_DAYS[unit];
+  const count = Math.round(exact);
+  if (count < 1) return { ok: false, reason: "less-than-one" };
+  if (count > MAX_FREQUENCY_COUNT) return { ok: false, reason: "over-maximum" };
+  if (Math.abs(count - exact) / exact > CONVERSION_TOLERANCE) return { ok: false, reason: "not-whole" };
+  return { ok: true, frequency: { count, unit } };
 }

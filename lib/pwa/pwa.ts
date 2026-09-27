@@ -49,3 +49,12 @@ export function isInstalled(): boolean {
   const iosStandalone = (navigator as Navigator & { standalone?: boolean }).standalone === true;
   return iosStandalone || window.matchMedia("(display-mode: standalone)").matches;
 }
+
+/**
+ * True only inside an app installed from Safari on an iPhone or iPad. `navigator.standalone`
+ * exists only on Apple's WebKit. That app has no back gesture of its own, unlike a Safari tab
+ * (edge swipe) or Android (the system back gesture), which is why SwipeBack checks this.
+ */
+export function isIosInstalledApp(): boolean {
+  return (navigator as Navigator & { standalone?: boolean }).standalone === true;
+}

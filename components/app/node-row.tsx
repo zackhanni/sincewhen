@@ -10,6 +10,13 @@ import { roomHref } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { useSheet } from "./sheet-context";
 
+/**
+ * The layout for a list of rows. One column on a phone; on wider screens (tablets, unfolded
+ * phones, desktops) as many 20rem columns as fit. rem, not px, so the Large size setting gets
+ * fewer, wider columns. `min(…, 100%)` keeps a very narrow screen from overflowing.
+ */
+export const ROW_LIST = "grid grid-cols-[repeat(auto-fill,minmax(min(20rem,100%),1fr))] gap-2";
+
 type NodeRowProps = {
   view: ChildView;
   hasChildren: boolean;
@@ -45,6 +52,9 @@ function TaskRow({ view, hasChildren, location }: NodeRowProps) {
   const timing = view.timing!;
   const completeTask = useCompleteTask();
   const isSevere = timing.status === "severe";
+  // The usual gray is only about 4.3:1 on a long-neglected row's pale-red background, under
+  // the 4.5:1 minimum for small text, so those rows use a darker gray.
+  const secondaryText = isSevere ? "text-neutral-600 dark:text-neutral-300" : "text-muted-foreground";
 
   return (
     <li
@@ -52,7 +62,7 @@ function TaskRow({ view, hasChildren, location }: NodeRowProps) {
         "flex items-center rounded-lg border border-l-4 bg-card",
         TASK_BAR[timing.status],
         // A long-neglected task gets a full red border as well as the "!" icon.
-        isSevere && "border-red-600 bg-red-50",
+        isSevere && "border-red-600 bg-red-50 dark:bg-red-950",
       )}
     >
       <button
@@ -69,14 +79,14 @@ function TaskRow({ view, hasChildren, location }: NodeRowProps) {
       <Link href={roomHref(node.id)} className="flex min-w-0 flex-1 items-center gap-2 py-2">
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-1.5">
-            {isSevere && <CircleAlertIcon aria-label="Long overdue" className="size-4 shrink-0 text-red-600" />}
+            {isSevere && <CircleAlertIcon aria-label="Long overdue" className="size-4 shrink-0 text-red-600 dark:text-red-400" />}
             <span className="truncate font-medium">{node.name}</span>
           </span>
           <span className="block truncate text-xs">
             <span className={TASK_DUE_TEXT[timing.status]}>{formatDue(timing)}</span>
-            <span className="text-muted-foreground"> · {formatFrequency(node.frequency!)}</span>
+            <span className={secondaryText}> · {formatFrequency(node.frequency!)}</span>
           </span>
-          {location && <span className="block truncate text-xs text-muted-foreground">{location}</span>}
+          {location && <span className={cn("block truncate text-xs", secondaryText)}>{location}</span>}
         </span>
         {/* An overdue task already counts for its sub-tasks, so the badge only appears when
             the task itself is fine but something inside it is not. */}
