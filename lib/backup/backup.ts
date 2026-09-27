@@ -20,10 +20,10 @@ import { readValidDisplayFields, type DisplaySettings } from "@/lib/display/disp
 // it is on the device, rather than reset or blocking the rest.
 
 export type BackupSummary = {
-  tasks: number;
+  taskCount: number;
   /** Everything that is not a task: locations, categories, rooms and any folder inside them. */
-  folders: number;
-  completions: number;
+  folderCount: number;
+  completionCount: number;
 };
 
 export type BackupReadResult =
@@ -47,16 +47,26 @@ export function buildBackupText(data: AppData, today: CalendarDate, displaySetti
   return JSON.stringify({ exportedAt: today, ...data, ...(displaySettings && { displaySettings }) }, null, 2);
 }
 
+/**
+ * The same backup without the indentation (and never with display settings), for the copy kept
+ * on the device before an import.
+ * That copy shares the browser's ~5 MB with the saved data, and indentation adds about 30%.
+ * It still reads back with `readBackupText`.
+ */
+export function buildCompactBackupText(data: AppData, today: CalendarDate): string {
+  return JSON.stringify({ exportedAt: today, ...data });
+}
+
 /** Counts shown before an import, so the user can tell it is the backup they meant to pick. */
 export function summarizeData(data: AppData): BackupSummary {
-  const tasks = data.nodes.filter((node) => node.frequency !== null).length;
-  return { tasks, folders: data.nodes.length - tasks, completions: data.completions.length };
+  const taskCount = data.nodes.filter((node) => node.frequency !== null).length;
+  return { taskCount, folderCount: data.nodes.length - taskCount, completionCount: data.completions.length };
 }
 
 /**
  * Whether the Due tab should suggest a backup. Nothing saved yet means nothing to lose. Someone
- * who has never backed up is first asked a week after their oldest item was added (`createdAt`),
- * so a new user is not nagged on day one; after a backup, every 30 days.
+ * who has never backed up is first asked FIRST_BACKUP_NUDGE_DAYS after their oldest item was added
+ * (`createdAt`), so a new user is not nagged on day one; after a backup, every BACKUP_NUDGE_DAYS.
  */
 export function isBackupDue(data: AppData, lastBackupDate: CalendarDate | null, today: CalendarDate): boolean {
   if (data.nodes.length === 0) return false;

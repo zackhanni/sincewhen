@@ -242,7 +242,10 @@ export const finalCta = {
   cta: "Open Sincewhen",
 };
 
+/** Who made the app: the footer credit and the publisher in the page's structured data. */
+export const maker = { name: "Web Wizard Dev", url: "https://webwizarddev.com" };
+
 export const footer = {
-  madeBy: "Made by Web Wizard Dev",
-  madeByHref: "https://webwizarddev.com",
+  madeBy: `Made by ${maker.name}`,
+  madeByHref: maker.url,
 };

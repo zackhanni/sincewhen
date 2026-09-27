@@ -1,17 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist } from "next/font/google";
 import { DisplaySettingsSync } from "@/components/app/display-settings-sync";
-import { DISPLAY_SETTINGS_SCRIPT } from "@/lib/display/display-settings";
+import { BAR_COLOR, DISPLAY_SETTINGS_SCRIPT } from "@/lib/display/display-settings";
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
+// Only the sans face is loaded. Nothing uses a monospace font, and next/font preloads every face
+// it is given on every page, so a mono face here would be downloaded for nothing (see
+// docs/pagespeed-audit.md). `font-mono` falls back to Tailwind's system monospace stack.
 const geistSans = Geist({
   variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
@@ -32,14 +30,14 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   // The browser bar color. Light here; switched to dark on the device by applyDisplaySettings.
-  themeColor: "#ffffff",
+  themeColor: BAR_COLOR.light,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} h-full antialiased`}
       // The script below adds the theme and size to <html> before React loads, so the server's
       // HTML and the page React finds differ on purpose. This tells React to accept that.
       suppressHydrationWarning

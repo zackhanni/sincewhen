@@ -1,22 +1,32 @@
-import { z } from "zod";
-
 // How the app looks on this device: light or dark, how big everything is drawn, and which screen
 // it opens on. Kept apart from the task data on purpose — a phone and a tablet can want
 // different sizes — and only put into a backup file when the user ticks the box for it.
+//
+// Checked with plain lists rather than a zod schema: the root layout loads this file on every
+// page, and zod is the biggest script in the app. The landing page would download it just to
+// check three words (docs/pagespeed-audit.md).
 
-export const displaySettingsSchema = z.object({
+const THEMES = ["light", "dark", "system"] as const;
+const SIZES = ["default", "large"] as const;
+const START_SCREENS = ["folders", "due"] as const;
+
+export type ThemeChoice = (typeof THEMES)[number];
+export type SizeChoice = (typeof SIZES)[number];
+export type StartScreenChoice = (typeof START_SCREENS)[number];
+
+export type DisplaySettings = {
   /** "system" follows the device's own light/dark setting, including a sunset schedule. */
-  theme: z.enum(["light", "dark", "system"]),
+  theme: ThemeChoice;
   /** "large" draws text, buttons and tap targets bigger, for people who find small text hard to read. */
-  size: z.enum(["default", "large"]),
+  size: SizeChoice;
   /** The screen the app opens on: the folder overview, or the flat list of what is due. */
-  startOn: z.enum(["folders", "due"]),
-});
+  startOn: StartScreenChoice;
+};
 
-export type DisplaySettings = z.infer<typeof displaySettingsSchema>;
-export type ThemeChoice = DisplaySettings["theme"];
-export type SizeChoice = DisplaySettings["size"];
-export type StartScreenChoice = DisplaySettings["startOn"];
+/** True when `value` is exactly one of `choices`. */
+function isOneOf<T extends string>(choices: readonly T[], value: unknown): value is T {
+  return typeof value === "string" && (choices as readonly string[]).includes(value);
+}
 
 /**
  * Folders first: Zack finds the color overview (which room needs work, cleaning or exercise)
@@ -26,8 +36,11 @@ export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = { theme: "system", size
 
 export const DISPLAY_SETTINGS_KEY = "sincewhen:display";
 
-/** The browser bar color for each resolved theme: the page background, as a hex color. */
-const BAR_COLOR = { light: "#ffffff", dark: "#0a0a0a" } as const;
+/**
+ * The browser bar color for each resolved theme: the page background, as a hex color. The light one
+ * is also the default in app/layout.tsx and the install color in app/manifest.ts.
+ */
+export const BAR_COLOR = { light: "#ffffff", dark: "#0a0a0a" } as const;
 
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 
@@ -40,12 +53,9 @@ export function readValidDisplayFields(raw: unknown): Partial<DisplaySettings> {
   if (typeof raw !== "object" || raw === null) return {};
   const value = raw as Record<string, unknown>;
   const fields: Partial<DisplaySettings> = {};
-  const theme = displaySettingsSchema.shape.theme.safeParse(value.theme);
-  if (theme.success) fields.theme = theme.data;
-  const size = displaySettingsSchema.shape.size.safeParse(value.size);
-  if (size.success) fields.size = size.data;
-  const startOn = displaySettingsSchema.shape.startOn.safeParse(value.startOn);
-  if (startOn.success) fields.startOn = startOn.data;
+  if (isOneOf(THEMES, value.theme)) fields.theme = value.theme;
+  if (isOneOf(SIZES, value.size)) fields.size = value.size;
+  if (isOneOf(START_SCREENS, value.startOn)) fields.startOn = value.startOn;
   return fields;
 }
 

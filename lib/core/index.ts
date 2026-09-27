@@ -1,5 +1,6 @@
 // The public surface of the core logic. App code imports from "@/lib/core", never from the
-// individual files, so the internals can be rearranged freely.
+// individual files, so the internals can be rearranged freely. The one exception is zod: import
+// `z` from "@/lib/core/zod", which configures it first (a lint rule enforces this).
 export * from "./complete";
 export * from "./constants";
 export * from "./dates";

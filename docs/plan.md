@@ -1,8 +1,8 @@
 # Sincewhen — design
 
 The decisions behind the app and the reason for each one. Read this before changing the data
-model or the due-date logic. Phase checklists live in [roadmap.md](roadmap.md); traps we have
-already hit live in [pitfalls.md](pitfalls.md).
+model or the due-date logic. Open work lives in [roadmap.md](roadmap.md), finished work in
+[changelog.md](changelog.md), and traps we have already hit in [pitfalls.md](pitfalls.md).
 
 ## What the app does
 
@@ -97,7 +97,8 @@ look worse than a room with 3 of 10 overdue.
   fresh UUID); core does not check it.
 - Turning a task into a folder keeps its `lastCompleted`, so switching it back loses nothing.
 - Duplicating a branch can either keep the last-completed dates or reset the copies to
-  "never done"; the UI should ask when copying into a different room.
+  "never done": the duplicate picker has a "Start the copy as never done" checkbox, on by
+  default.
 
 ## Navigation
 
@@ -113,7 +114,7 @@ look worse than a room with 3 of 10 overdue.
   Android's) still follows history. The breadcrumb jumps further up.
 - **The app opens on Folders or Due**, chosen in Settings (Folders by default: the color
   overview shows which place or category needs work; being tested with other users). `/` is a
-  launcher that shows nothing and replaces itself with the chosen screen (`app/page.tsx`); it is
+  launcher that shows nothing and replaces itself with the chosen screen (`app/(app)/page.tsx`); it is
   the manifest's `start_url`, so every installed icon goes through it. The tabs have their own
   addresses (`/due`, `/rooms`, `/settings`), and nothing should link to `/` as a tab.
 - A **Due** tab (`/due`) is a flat list of everything overdue or due soon, with the room
@@ -172,7 +173,9 @@ different sizes, so they are not part of `AppData`.
   text is copied to `sincewhen:unreadable-backup` and the app shows a banner, instead of
   starting empty and overwriting the user's tasks on the next save. The banner stays on later
   launches for as long as that copy exists; Settings can save it or discard it.
-- A save that fails (private browsing, full device) raises one persistent warning toast.
+- A save that fails raises one persistent warning toast that names the cause (the site's storage
+  is full, or private browsing). Before that, a one-time warning shows once everything the site
+  stores passes `STORAGE_WARNING_CHARS` (see the storage entry in pitfalls.md).
 - **The app must be an installed PWA.** Safari deletes script-written storage after 7 days
   without a visit; a home-screen PWA is exempt. See [pwa.md](pwa.md).
 - Export is a JSON file, offered both as a download and through the Web Share API
@@ -184,14 +187,17 @@ different sizes, so they are not part of `AppData`.
 - Import is an in-app file picker, validated by the same `parseAppData` used on load, with a
   preview (counts and export date) and a confirmation before replacing data. The data being
   replaced is first copied to `sincewhen:before-import` so a wrong import can be recovered by hand.
+  If there is no room for that copy, the import stops unless the device is empty or a backup file
+  was saved today (the file is then the copy); the message says to save one first.
 - Settings also offers the raw text kept under `sincewhen:unreadable-backup`, if there is any. **A texted import link does not work**: an installed PWA has separate storage
   from Safari, and a link opens Safari.
 
 ## Offline
 
-`public/sw.js` is a small hand-written service worker rather than Serwist: the app is two static
-pages and needs three caching rules, which is easier to read and debug than a generated worker.
-On install it caches both pages and every build file their HTML refers to, so the very first
+`public/sw.js` is a small hand-written service worker rather than Serwist: the app is four static
+pages (`/`, `/due`, `/rooms`, `/settings`) and needs three caching rules, which is easier to read
+and debug than a generated worker. On install it caches every page and every build file their
+HTML refers to, so the very first
 offline launch works. Pages are network-first (a deploy shows up on next launch), hashed build
 files are cache-first. Each deploy registers the worker under a new URL (`?v=<build id>`) and
 gets its own cache, so old build files are dropped on every update. It registers in production only. `lib/pwa/pwa.ts` holds registration,

@@ -5,9 +5,16 @@ import { useRef, useState, useSyncExternalStore, type ChangeEvent, type ReactNod
 import { DownloadIcon, Share2Icon, UploadIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { backupFileName, buildBackupText, readBackupText, summarizeData, type BackupReadResult } from "@/lib/backup/backup";
+import {
+  backupFileName,
+  buildBackupText,
+  buildCompactBackupText,
+  readBackupText,
+  summarizeData,
+  type BackupReadResult,
+} from "@/lib/backup/backup";
 import { downloadTextFile, makeShareableFile, shareFile } from "@/lib/backup/send-file";
-import { daysBetween } from "@/lib/core";
+import { MAX_BACKUP_FILE_BYTES, daysBetween } from "@/lib/core";
 import {
   getDisplaySettings,
   setDisplaySettings,
@@ -16,12 +23,13 @@ import {
   type StartScreenChoice,
   type ThemeChoice,
 } from "@/lib/display/display-settings";
+import { plural } from "@/lib/format";
 import { useDisplaySettings } from "@/lib/hooks/use-display-settings";
 import { useToday } from "@/lib/hooks/use-today";
 import { isInstalled, requestPersistentStorage } from "@/lib/pwa/pwa";
 import { showError } from "@/lib/show-error";
-import { CORRUPT_BACKUP_KEY } from "@/lib/store/app-store";
-import { appStore, useAppStore } from "@/lib/store/use-app-store";
+import { UNREADABLE_BACKUP_KEY } from "@/lib/store/app-store";
+import { appStore, useAppStore, warnIfStorageNearlyFull } from "@/lib/store/use-app-store";
 import { cn } from "@/lib/utils";
 import { InstallSteps } from "./install-steps";
 import { openIntro } from "./intro";
@@ -149,6 +157,10 @@ export function SettingsScreen() {
     // Clear the input so picking the same file again still fires this handler.
     event.target.value = "";
     if (!file) return;
+    if (file.size > MAX_BACKUP_FILE_BYTES) {
+      toast.error("This file is too big to be a Sincewhen backup.");
+      return;
+    }
     const result = readBackupText(await file.text());
     if (result.ok) setPendingImport(result);
     else toast.error(result.error);
@@ -158,10 +170,23 @@ export function SettingsScreen() {
     if (!pendingImport) return;
     // Importing replaces everything, so keep what is being replaced. It is not shown anywhere;
     // it exists so a wrong import can be recovered from by hand.
+    const safetyCopy = buildCompactBackupText(data, today);
     try {
-      window.localStorage.setItem(BEFORE_IMPORT_KEY, buildBackupText(data, today));
+      window.localStorage.setItem(BEFORE_IMPORT_KEY, safetyCopy);
+      warnIfStorageNearlyFull(BEFORE_IMPORT_KEY, safetyCopy);
     } catch {
-      // Storage full or unavailable: the import itself can still go ahead.
+      // No room for the copy (or storage is blocked). If there is something to lose and no backup
+      // file was saved today, stop: the replaced tasks would be gone with no way back. A file saved
+      // today is itself the safety copy, so the import can go ahead, and an empty device has
+      // nothing to lose. Never a dead end: saving a backup file needs no storage.
+      const hasSomethingToLose = data.nodes.length > 0;
+      if (hasSomethingToLose && lastBackupDate !== today) {
+        toast.error("Save a backup file of your current tasks first.", {
+          description:
+            "This device has no room to keep a safety copy of them before they are replaced. Save or share a backup above, then restore again.",
+        });
+        return;
+      }
     }
     appStore.getState().replaceAllData(pendingImport.data);
     // Only the settings the file has; the rest stay as they are on this device.
@@ -214,10 +239,9 @@ export function SettingsScreen() {
           them back if this one loses them.
         </p>
         <p className="text-sm">
-          {current.tasks} {current.tasks === 1 ? "task" : "tasks"} in {current.folders}{" "}
-          {current.folders === 1 ? "folder" : "folders"}.{" "}
+          {plural(current.taskCount, "task")} in {plural(current.folderCount, "folder")}.{" "}
           {lastBackupDate
-            ? `Last backup: ${lastBackupDate} (${daysBetween(lastBackupDate, today)} days ago).`
+            ? `Last backup: ${lastBackupDate} (${plural(daysBetween(lastBackupDate, today), "day")} ago).`
             : "Never backed up."}
         </p>
         <label className="flex items-start gap-3 text-sm">
@@ -262,7 +286,7 @@ export function SettingsScreen() {
             <p>
               This backup{pendingImport.exportedAt ? ` from ${pendingImport.exportedAt}` : ""} has{" "}
               <strong>
-                {pendingImport.summary.tasks} tasks in {pendingImport.summary.folders} folders
+                {plural(pendingImport.summary.taskCount, "task")} in {plural(pendingImport.summary.folderCount, "folder")}
               </strong>
               .
             </p>
@@ -270,7 +294,7 @@ export function SettingsScreen() {
               <p>It also sets this device&rsquo;s display ({describeDisplaySettings(pendingImport.displaySettings)}).</p>
             )}
             <p>
-              It will <strong>replace</strong> the {data.nodes.length} items on this device. They will not be
+              It will <strong>replace</strong> the {plural(data.nodes.length, "item")} on this device. They will not be
               merged.
             </p>
             <Button variant="destructive" size="lg" onClick={confirmImport}>
@@ -299,7 +323,7 @@ export function SettingsScreen() {
             variant="outline"
             onClick={() => {
               // Read at the moment of the tap, so the file is whatever is parked right now.
-              const parked = readStorage(CORRUPT_BACKUP_KEY);
+              const parked = readStorage(UNREADABLE_BACKUP_KEY);
               // `!== null`, not truthiness: the parked text can be an empty string, and the button
               // must not silently do nothing while the warning is still showing.
               if (parked !== null) downloadTextFile("sincewhen-unreadable-data.json", parked);

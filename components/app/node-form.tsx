@@ -42,12 +42,12 @@ const LAST_DONE_CHOICES: { value: LastDoneChoice; label: string }[] = [
 ];
 
 // TanStack Form validators return an error message, or undefined when the value is fine.
-const validateName = ({ value }: { value: string }) =>
-  value.trim().length === 0
-    ? "Give it a name"
-    : value.trim().length > MAX_NAME_LENGTH
-      ? `Keep it under ${MAX_NAME_LENGTH} characters`
-      : undefined;
+function validateName({ value }: { value: string }): string | undefined {
+  const name = value.trim();
+  if (name.length === 0) return "Give it a name";
+  if (name.length > MAX_NAME_LENGTH) return `Keep it under ${MAX_NAME_LENGTH} characters`;
+  return undefined;
+}
 
 const validateCount = ({ value }: { value: number }) =>
   Number.isInteger(value) && value >= 1 && value <= MAX_FREQUENCY_COUNT
@@ -269,15 +269,15 @@ export function NodeForm({ node, startsRepeating, atTopLevel, submitLabel, onSub
                     <form.Field
                       name="lastDoneDate"
                       validators={{
-                        onSubmit: ({ value, fieldApi }) =>
-                          !fieldApi.form.getFieldValue("repeats") ||
-                          fieldApi.form.getFieldValue("lastDone") !== "date"
-                            ? undefined
-                            : !isValidCalendarDate(value)
-                            ? "Pick a date"
-                            : value > today
-                              ? "That date is in the future"
-                              : undefined,
+                        onSubmit: ({ value, fieldApi }) => {
+                          // The date only matters for a task whose "last done" is a picked date.
+                          const isPickingDate =
+                            fieldApi.form.getFieldValue("repeats") && fieldApi.form.getFieldValue("lastDone") === "date";
+                          if (!isPickingDate) return undefined;
+                          if (!isValidCalendarDate(value)) return "Pick a date";
+                          if (value > today) return "That date is in the future";
+                          return undefined;
+                        },
                       }}
                     >
                       {(field) => (

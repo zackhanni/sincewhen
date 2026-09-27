@@ -22,16 +22,16 @@ const DISMISSED_KEY = "sincewhen:intro-dismissed";
 let isOpen = false;
 /** So it opens once per launch, not every time the user switches tabs. */
 let launchCheckDone = false;
-const listeners = new Set<() => void>();
+const introListeners = new Set<() => void>();
 
-function setOpen(open: boolean) {
+function setIntroOpen(open: boolean) {
   isOpen = open;
-  for (const listener of listeners) listener();
+  for (const listener of introListeners) listener();
 }
 
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
+function subscribeToIntro(listener: () => void) {
+  introListeners.add(listener);
+  return () => introListeners.delete(listener);
 }
 
 function wasDismissed(): boolean {
@@ -54,12 +54,12 @@ function rememberDismissed() {
 export function showIntroOnLaunch() {
   if (launchCheckDone) return;
   launchCheckDone = true;
-  if (!wasDismissed()) setOpen(true);
+  if (!wasDismissed()) setIntroOpen(true);
 }
 
-/** Opens the intro on request (Settings > Show the intro). */
+/** Opens the intro on request (Settings > Show the intro tutorial). */
 export function openIntro() {
-  setOpen(true);
+  setIntroOpen(true);
 }
 
 // A computer with a mouse. Phones and tablets report a coarse pointer, even an iPad in landscape.
@@ -230,8 +230,47 @@ function buildPages({ onDesktop, installed }: { onDesktop: boolean; installed: b
   return pages;
 }
 
+/**
+ * The intro's forward buttons: Next until the last page. There, someone who already has tasks just
+ * closes it; an empty app is offered the examples or a clean start.
+ */
+function ForwardButtons({
+  isLastPage,
+  hasData,
+  onNext,
+  onFinish,
+}: {
+  isLastPage: boolean;
+  hasData: boolean;
+  onNext: () => void;
+  onFinish: () => void;
+}) {
+  if (!isLastPage) {
+    return (
+      <Button size="lg" onClick={onNext}>
+        Next
+      </Button>
+    );
+  }
+  if (hasData) {
+    return (
+      <Button size="lg" onClick={onFinish}>
+        Done
+      </Button>
+    );
+  }
+  return (
+    <>
+      <Button variant="outline" size="lg" onClick={onFinish}>
+        Start empty
+      </Button>
+      <StartWithExamplesButton variant="default" onStarted={onFinish} />
+    </>
+  );
+}
+
 export function Intro() {
-  const open = useSyncExternalStore(subscribe, () => isOpen, () => false);
+  const open = useSyncExternalStore(subscribeToIntro, () => isOpen, () => false);
   const onDesktop = useSyncExternalStore(subscribeToNothing, () => window.matchMedia(DESKTOP_QUERY).matches, () => false);
   const installed = useSyncExternalStore(subscribeToNothing, isInstalled, () => false);
   const hasData = useAppStore((state) => state.data.nodes.length > 0);
@@ -245,7 +284,7 @@ export function Intro() {
   /** Skipping only sticks when the box is ticked; reading to the end always does. */
   const close = (finished: boolean) => {
     if (finished || dontShowAgain) rememberDismissed();
-    setOpen(false);
+    setIntroOpen(false);
     setPageNumber(0);
   };
 
@@ -282,22 +321,12 @@ export function Intro() {
               Skip
             </Button>
           )}
-          {!isLastPage ? (
-            <Button size="lg" onClick={() => setPageNumber(pageNumber + 1)}>
-              Next
-            </Button>
-          ) : hasData ? (
-            <Button size="lg" onClick={() => close(true)}>
-              Done
-            </Button>
-          ) : (
-            <>
-              <Button variant="outline" size="lg" onClick={() => close(true)}>
-                Start empty
-              </Button>
-              <StartWithExamplesButton variant="default" onStarted={() => close(true)} />
-            </>
-          )}
+          <ForwardButtons
+            isLastPage={isLastPage}
+            hasData={hasData}
+            onNext={() => setPageNumber(pageNumber + 1)}
+            onFinish={() => close(true)}
+          />
         </div>
       </DialogContent>
     </Dialog>

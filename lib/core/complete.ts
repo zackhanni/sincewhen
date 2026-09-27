@@ -100,11 +100,11 @@ export function completeTask(
  * and its history disagreeing.
  */
 export function undoCompletion(data: AppData, undo: CompletionUndo): AppData {
-  const newestBatchOf = new Map(data.completions.map((entry) => [entry.nodeId, entry.batchId]));
+  const newestBatchOf = new Map(data.completions.map((completion) => [completion.nodeId, completion.batchId]));
   const previousById = new Map(
     undo.previous
-      .filter((entry) => newestBatchOf.get(entry.nodeId) === undo.batchId)
-      .map((entry) => [entry.nodeId, entry.lastCompleted]),
+      .filter((before) => newestBatchOf.get(before.nodeId) === undo.batchId)
+      .map((before) => [before.nodeId, before.lastCompleted]),
   );
   return {
     ...data,

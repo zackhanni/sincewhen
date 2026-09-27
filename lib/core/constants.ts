@@ -27,7 +27,7 @@ export const SOON_DAYS = 1;
 
 /** A task is "severe" once it is overdue by this share of its own interval... */
 export const SEVERE_OVERDUE_RATIO = 0.5;
-/** ...and by at least this many days, so a daily task is not severe after 12 hours. */
+/** ...and by at least this many days, so a daily task is not severe after 1 day. */
 export const SEVERE_MIN_DAYS = 3;
 
 // --- Room color -------------------------------------------------------------------------------
@@ -47,3 +47,17 @@ export const BACKUP_NUDGE_DAYS = 30;
  * moment they add their first task or the examples, when there is little to lose.
  */
 export const FIRST_BACKUP_NUDGE_DAYS = 7;
+/**
+ * Import refuses a file bigger than this before reading it, so picking the wrong file (a video,
+ * say) cannot freeze the page. Browsers keep only about 5 MB per site, and a backup file is about
+ * 1.3 times the size of what is saved (it is indented), so no real backup comes near this.
+ */
+export const MAX_BACKUP_FILE_BYTES = 10 * 1024 * 1024;
+
+/**
+ * Warn once everything the site stores passes this many characters, all keys together (the copy
+ * kept before an import counts too). Browsers give a site about 5 million, and the completion log
+ * only grows (about 118 characters per completion), so this leaves room to back up before saving
+ * starts to fail. Heavy use takes years to get here.
+ */
+export const STORAGE_WARNING_CHARS = 4_000_000;

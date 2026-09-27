@@ -25,6 +25,26 @@ import { StartWithExamplesButton } from "./start-with-examples-button";
 import { useSheet } from "./sheet-context";
 import { SwipeBack } from "./swipe-back";
 
+/** Which of the three kinds of screen this is decides its empty text and its add button. */
+type ScreenKind = "top" | "task" | "folder";
+
+function screenKind(id: string | null, isTask: boolean): ScreenKind {
+  if (id === null) return "top";
+  return isTask ? "task" : "folder";
+}
+
+const EMPTY_TEXT: Record<ScreenKind, string> = {
+  top: "Start with a location or a category, such as Home, Work or Cleaning.",
+  task: "No sub-tasks. Add some to break this task into steps.",
+  folder: "Nothing here yet. Add a task, or a folder to hold tasks.",
+};
+
+const ADD_LABEL: Record<ScreenKind, string> = {
+  top: "Add a location or category",
+  task: "Add a sub-task",
+  folder: "Add a task or folder",
+};
+
 /**
  * The screen for one item. `id === null` is the top of the tree, which lists the locations and
  * categories. It carries the app's name, because top-level items are not always places (Home,
@@ -43,7 +63,7 @@ export function NodeScreen({ id }: { id: string | null }) {
     return (
       <div className="py-16 text-center">
         <p className="font-medium">This item no longer exists.</p>
-        <Link href="/rooms" className="text-sm underline">
+        <Link href={roomHref(null)} className="text-sm underline">
           Back to Sincewhen
         </Link>
       </div>
@@ -52,6 +72,7 @@ export function NodeScreen({ id }: { id: string | null }) {
 
   const path = id === null ? [] : getPath(index, id);
   const timing = node ? getTaskTiming(node, today) : null;
+  const kind = screenKind(id, timing !== null);
   const views = getChildViews(index, id, today);
   // "Back" always means one level up, to the item this one sits in, whichever way the user
   // arrived. The breadcrumb covers jumping further.
@@ -64,7 +85,7 @@ export function NodeScreen({ id }: { id: string | null }) {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink render={<Link href="/rooms" />}>Sincewhen</BreadcrumbLink>
+              <BreadcrumbLink render={<Link href={roomHref(null)} />}>Sincewhen</BreadcrumbLink>
             </BreadcrumbItem>
             {path.map((step) => (
               <Fragment key={step.id}>
@@ -135,11 +156,7 @@ export function NodeScreen({ id }: { id: string | null }) {
         </ul>
       ) : (
         <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-          {id === null
-            ? "Start with a location or a category, such as Home, Work or Cleaning."
-            : timing
-              ? "No sub-tasks. Add some to break this task into steps."
-              : "Nothing here yet. Add a task, or a folder to hold tasks."}
+          {EMPTY_TEXT[kind]}
         </p>
       )}
 
@@ -151,7 +168,7 @@ export function NodeScreen({ id }: { id: string | null }) {
           onClick={() => openSheet({ mode: "add", parentId: id })}
         >
           <PlusIcon />
-          {id === null ? "Add a location or category" : timing ? "Add a sub-task" : "Add a task or folder"}
+          {ADD_LABEL[kind]}
         </Button>
         {/* An empty app can be filled with common chores to try it out, or to keep. */}
         {id === null && views.length === 0 && <StartWithExamplesButton />}

@@ -25,6 +25,37 @@ function appVersion(): string {
   return `${year}.${month}.${day}`;
 }
 
+/**
+ * The Content-Security-Policy: which sources the page may load from. Everything the app uses is
+ * its own (fonts are self-hosted by next/font at build time), so almost everything is 'self'.
+ *
+ * Scripts need 'unsafe-inline' because every page is static: Next.js' inline bootstrap scripts
+ * and our theme script (app/layout.tsx) are baked in at build time. The stricter nonce form only
+ * works on pages rendered per request, which would end offline use (the service worker caches
+ * these static pages). What still counts: no script can be loaded from anywhere else, and with
+ * `connect-src`, `img-src` and `form-action` on 'self', injected code has no fetch, beacon, image
+ * or form to send data to another site. No CSP can stop a script navigating the page away with
+ * data in the address, so the real protection stays upstream: React renders user text as text,
+ * never as HTML. Hashes instead of 'unsafe-inline' were weighed and declined: see
+ * docs/security-audit.md.
+ * Development adds 'unsafe-eval', which the dev server's hot reload needs.
+ */
+const CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
+  "style-src 'self' 'unsafe-inline'",
+  // data: and blob: cover inline images and the temporary link a backup download uses.
+  "img-src 'self' data: blob:",
+  "font-src 'self'",
+  "connect-src 'self'",
+  "worker-src 'self'",
+  "manifest-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+].join("; ");
+
 const nextConfig: NextConfig = {
   env: {
     // Names the service worker's cache, so each deploy gets a fresh one (see public/sw.js).
@@ -51,6 +82,20 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      {
+        // Standard hardening for every response. The app has no server data to protect, so these
+        // are defense in depth: they stop other sites framing the app, stop the browser guessing
+        // file types, keep full URLs (which carry item ids) out of the Referer header sent to other
+        // sites, and switch off device features the app never uses.
+        source: "/:path*",
+        headers: [
+          { key: "Content-Security-Policy", value: CONTENT_SECURITY_POLICY },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
+        ],
+      },
       {
         // The browser must always re-check the service worker. If sw.js itself were cached, a
         // fixed or updated worker could take a day or more to reach the phone.
