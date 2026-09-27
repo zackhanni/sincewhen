@@ -1,5 +1,5 @@
 import { addDays, addMonths, addWeeks, addYears, differenceInCalendarDays } from "date-fns";
-import { MAX_FREQUENCY_COUNT } from "./constants";
+import { CONVERSION_TOLERANCE, MAX_FREQUENCY_COUNT } from "./constants";
 import type { Frequency, FrequencyUnit } from "./types";
 
 /**
@@ -96,21 +96,24 @@ const AVERAGE_DAYS: Record<FrequencyUnit, number> = {
 export type FrequencyConversion =
   | { ok: true; frequency: Frequency }
   /** No whole number of the new unit, from 1 to MAX_FREQUENCY_COUNT, comes close. */
-  | { ok: false; reason: "less-than-one" | "over-maximum" };
+  | { ok: false; reason: "less-than-one" | "over-maximum" | "not-whole" };
 
 /**
- * The same length of time in another unit, rounded to a whole number: 2 weeks → 14 days,
- * 2 months → 61 days, 10 days → 1 week. A convenience for editing, not date arithmetic: due
- * dates still come from `addFrequency`, where "2 months" is never a day count.
+ * The same length of time in another unit, as a whole number: 2 weeks → 14 days, 2 months →
+ * 61 days, 3 months → 13 weeks. A convenience for editing, not date arithmetic: due dates still
+ * come from `addFrequency`, where "2 months" is never a day count.
  *
- * Refuses rather than clamps when the answer is not a valid count: 3 years is about 1,096
- * days, and quietly offering 999 days (or 1 year for "every day") would save a different
- * interval that looks like the same one. The caller asks the user for the number instead.
+ * Refuses whenever the answer would be a different interval that looks like the same one, and
+ * the caller asks the user for the number instead: under 1 of the new unit (every day in
+ * years), over the maximum count (3 years is about 1,096 days), or not within
+ * CONVERSION_TOLERANCE of a whole number (8 months would round to 1 year).
  */
 export function convertFrequency(frequency: Frequency, unit: FrequencyUnit): FrequencyConversion {
   const days = frequency.count * AVERAGE_DAYS[frequency.unit];
-  const count = Math.round(days / AVERAGE_DAYS[unit]);
+  const exact = days / AVERAGE_DAYS[unit];
+  const count = Math.round(exact);
   if (count < 1) return { ok: false, reason: "less-than-one" };
   if (count > MAX_FREQUENCY_COUNT) return { ok: false, reason: "over-maximum" };
+  if (Math.abs(count - exact) / exact > CONVERSION_TOLERANCE) return { ok: false, reason: "not-whole" };
   return { ok: true, frequency: { count, unit } };
 }

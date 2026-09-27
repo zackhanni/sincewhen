@@ -39,11 +39,21 @@ export const metadata: Metadata = {
   },
 };
 
-/** A phone-shaped frame around a real screenshot, in the visitor's own theme. */
-function PhoneShot({ image, alt, priority = false }: { image: string; alt: string; priority?: boolean }) {
-  const shared = { width: 390, height: 844, priority, sizes: "(min-width: 640px) 280px, 70vw" };
+/**
+ * A phone-shaped frame around a real screenshot, in the visitor's own theme. Both variants stay
+ * lazy: only the visible one loads, because a hidden lazy image is never fetched. Preloading
+ * (`preload`, the old `priority`) would fetch both, so the hero asks for a high fetch priority
+ * instead, as the Next.js image docs advise for light and dark pairs.
+ */
+function PhoneShot({ image, alt, isHero = false }: { image: string; alt: string; isHero?: boolean }) {
+  const shared = {
+    width: 390,
+    height: 844,
+    sizes: "(min-width: 640px) 280px, 70vw",
+    fetchPriority: isHero ? ("high" as const) : undefined,
+  };
   return (
-    <div className="mx-auto w-full max-w-[280px] overflow-hidden rounded-[2.25rem] border-[6px] border-neutral-900 bg-neutral-900 shadow-2xl dark:border-neutral-700">
+    <div className="mx-auto w-full max-w-70 overflow-hidden rounded-[2.25rem] border-[6px] border-neutral-900 bg-neutral-900 shadow-2xl dark:border-neutral-700">
       <Image src={`/landing/${image}-light.png`} alt={alt} {...shared} className="block dark:hidden" />
       <Image src={`/landing/${image}-dark.png`} alt={alt} {...shared} className="hidden dark:block" />
     </div>
@@ -96,7 +106,7 @@ export default function AboutPage() {
             </div>
             <p className="text-sm text-muted-foreground">{hero.note}</p>
           </div>
-          <PhoneShot image="folders" alt={screens.items[0].alt} priority />
+          <PhoneShot image="folders" alt={screens.items[0].alt} isHero />
         </div>
       </section>
 

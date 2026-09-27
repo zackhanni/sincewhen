@@ -129,6 +129,12 @@ Switching a saved "every 2 weeks" to days, then months, then weeks gave 14 days,
 weeks: each step rounded the previous one. `node-form.tsx` now always converts from the saved
 frequency, so going back to the original unit restores the original number.
 
+### A rounded conversion can be a different schedule wearing the same label
+Rounding to a bigger unit hides large errors: 8 months becomes "1 year" (50% off), 18 months
+"2 years". Even the bounds check passed those. `convertFrequency` accepts a whole number only
+within `CONVERSION_TOLERANCE` (5%) of the exact value; anything else asks the user. Months
+never divide into days or weeks exactly, which is why there is a tolerance at all.
+
 ### Dated examples must work on every day, not just today
 The examples are dated "N days ago", and whether 35 days ago is overdue for a monthly task
 depends on how long the month was. `examples.test.ts` builds them for every day of two years
@@ -265,6 +271,12 @@ It set `--font-sans: var(--font-sans)` in `globals.css`, which resolves to nothi
 app silently fell back to a serif font. It must point at the variable `next/font` defines:
 `--font-sans: var(--font-geist-sans)`. Only a screenshot revealed it — typecheck, lint and tests
 were all green.
+
+### Preloading a light/dark image pair downloads both
+`priority` (deprecated in Next.js 16 for `preload`) adds a preload link per image, so the hidden
+theme's screenshot downloaded too: two preload links and both files, measured. Leave both
+variants lazy (a hidden lazy image is never fetched) and give the visible one
+`fetchPriority="high"`, as the Next.js image docs say under "Theme detection".
 
 ### A link styled as a button needs `cn(buttonVariants(...))`
 `buttonVariants` returns the base style's `border-transparent` and the outline style's

@@ -131,8 +131,12 @@ export function NodeForm({ node, startsRepeating, atTopLevel, submitLabel, onSub
       return;
     }
     form.setFieldValue("count", Number.NaN);
-    const limit = result.reason === "over-maximum" ? `more than ${MAX_FREQUENCY_COUNT} ${unit}s` : `less than 1 ${unit}`;
-    setConversionNote(`${formatFrequency(saved)} is ${limit}. Enter how many ${unit}s.`);
+    const why = {
+      "over-maximum": `is more than ${MAX_FREQUENCY_COUNT} ${unit}s`,
+      "less-than-one": `is less than 1 ${unit}`,
+      "not-whole": `is not a whole number of ${unit}s`,
+    }[result.reason];
+    setConversionNote(`${formatFrequency(saved)} ${why}. Enter how many ${unit}s.`);
   };
 
   return (

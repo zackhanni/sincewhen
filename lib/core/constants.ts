@@ -9,6 +9,14 @@ export const MAX_DEPTH = 5;
 export const MAX_NAME_LENGTH = 120;
 export const MAX_FREQUENCY_COUNT = 999;
 
+/**
+ * Switching a saved task's unit converts its count only when a whole number of the new unit is
+ * this close (as a share of the interval). Months never divide into days or weeks exactly, so
+ * some slack is needed: 2 months is 60.9 days, so 61 days is 0.2% off. Beyond it the form asks
+ * for a number: 8 months is not a whole number of years (1 year is 50% off).
+ */
+export const CONVERSION_TOLERANCE = 0.05;
+
 // --- Task status -------------------------------------------------------------------------------
 // progress = elapsed days / interval days. 0 = just completed, 1 = due today, 2 = a full interval late.
 
