@@ -37,10 +37,19 @@ No place was found where user data reaches HTML or script (see coverage), so the
 backstop. It is the static form: `script-src 'self' 'unsafe-inline'`, because every page is
 prerendered and Next.js' bootstrap scripts and the theme script are inline. A nonce CSP was
 rejected: it only works on pages rendered per request, which would end offline use (the
-service worker caches the static pages). What the static form still gives: `connect-src 'self'`
-stops injected code sending tasks to another site, no script loads from anywhere else,
-`frame-ancestors 'none'`, `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`.
-Development adds `'unsafe-eval'` for hot reload.
+service worker caches the static pages). What the static form still gives: no script loads
+from anywhere else; `connect-src`, `img-src` and `form-action` on `'self'` leave injected code no
+fetch, beacon, image or form to send data to another site; `frame-ancestors 'none'`,
+`object-src 'none'`, `base-uri 'self'`. It cannot stop a script navigating the page away with
+data in the URL (no CSP can), so the real protection stays upstream: user text is rendered as
+text. Development adds `'unsafe-eval'` for hot reload.
+
+**Hashes instead of `'unsafe-inline'` — declined (PR review, 2026-09-27).** Next.js' inline
+bootstrap scripts carry each page's data and change with every build, and `headers()` in
+`next.config.ts` is read before the HTML exists. A hash CSP would need a second build pass or a
+`proxy.ts` that runs on every request and reads a post-build manifest. For an app with no server
+data and no path that renders user input as HTML, that cost buys little. Revisit if a feature
+ever renders user-supplied HTML.
 
 zod 4 probes `new Function` whenever a `z.object()` is created, which the CSP reports as a
 violation on every page. zod is now imported only through `lib/core/zod.ts`, which sets

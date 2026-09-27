@@ -32,8 +32,12 @@ function appVersion(): string {
  * Scripts need 'unsafe-inline' because every page is static: Next.js' inline bootstrap scripts
  * and our theme script (app/layout.tsx) are baked in at build time. The stricter nonce form only
  * works on pages rendered per request, which would end offline use (the service worker caches
- * these static pages). What still counts: `connect-src 'self'` means injected code could not
- * send anyone's tasks to another site, and no script can be loaded from anywhere else.
+ * these static pages). What still counts: no script can be loaded from anywhere else, and with
+ * `connect-src`, `img-src` and `form-action` on 'self', injected code has no fetch, beacon, image
+ * or form to send data to another site. No CSP can stop a script navigating the page away with
+ * data in the address, so the real protection stays upstream: React renders user text as text,
+ * never as HTML. Hashes instead of 'unsafe-inline' were weighed and declined: see
+ * docs/security-audit.md.
  * Development adds 'unsafe-eval', which the dev server's hot reload needs.
  */
 const CONTENT_SECURITY_POLICY = [
