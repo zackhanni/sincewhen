@@ -21,13 +21,13 @@ type NodeRowProps = {
   view: ChildView;
   hasChildren: boolean;
   /** Shown under the name on the Due tab, e.g. "Home › Kitchen". */
-  location?: string;
+  parentPath?: string;
 };
 
-/** One line in a list. A node with a frequency renders as a task, anything else as a room card. */
-export function NodeRow({ view, hasChildren, location }: NodeRowProps) {
+/** One line in a list. A node with a frequency renders as a task, anything else as a folder row. */
+export function NodeRow({ view, hasChildren, parentPath }: NodeRowProps) {
   return view.timing ? (
-    <TaskRow view={view} hasChildren={hasChildren} location={location} />
+    <TaskRow view={view} hasChildren={hasChildren} parentPath={parentPath} />
   ) : (
     <FolderRow view={view} />
   );
@@ -47,7 +47,7 @@ function MenuButton({ node }: { node: TaskNode }) {
   );
 }
 
-function TaskRow({ view, hasChildren, location }: NodeRowProps) {
+function TaskRow({ view, hasChildren, parentPath }: NodeRowProps) {
   const { node, summary } = view;
   const timing = view.timing!;
   const completeTask = useCompleteTask();
@@ -86,7 +86,7 @@ function TaskRow({ view, hasChildren, location }: NodeRowProps) {
             <span className={TASK_DUE_TEXT[timing.status]}>{formatDue(timing)}</span>
             <span className={secondaryText}> · {formatFrequency(node.frequency!)}</span>
           </span>
-          {location && <span className={cn("block truncate text-xs", secondaryText)}>{location}</span>}
+          {parentPath && <span className={cn("block truncate text-xs", secondaryText)}>{parentPath}</span>}
         </span>
         {/* An overdue task already counts for its sub-tasks, so the badge only appears when
             the task itself is fine but something inside it is not. */}

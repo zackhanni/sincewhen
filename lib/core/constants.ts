@@ -27,7 +27,7 @@ export const SOON_DAYS = 1;
 
 /** A task is "severe" once it is overdue by this share of its own interval... */
 export const SEVERE_OVERDUE_RATIO = 0.5;
-/** ...and by at least this many days, so a daily task is not severe after 12 hours. */
+/** ...and by at least this many days, so a daily task is not severe after 1 day. */
 export const SEVERE_MIN_DAYS = 3;
 
 // --- Room color -------------------------------------------------------------------------------

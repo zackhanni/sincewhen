@@ -34,6 +34,10 @@ export const frequencySchema = z.object({
  * Any node can have children, which is how a task gets sub-tasks. Nodes are stored as a flat
  * list linked by `parentId` rather than nested, so a move is one field change and each node maps
  * to one database row later. (Named TaskNode because `Node` is already a DOM global.)
+ *
+ * Words used for them: the code says "folder" for any node without a frequency (types, backup,
+ * the Folders tab), "room" where it colors a folder or opens one (`RoomSummary`, `roomHref`,
+ * which also opens tasks), and "location" only for the top level. Screens say "item" for any node.
  */
 export const taskNodeSchema = z.object({
   id: z.string().min(1),

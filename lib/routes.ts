@@ -1,3 +1,5 @@
+import type { StartScreenChoice } from "@/lib/display/display-settings";
+
 /**
  * The URL of an item's screen. null is the top of the tree, the list of locations.
  *
@@ -11,5 +13,8 @@ export function roomHref(id: string | null): string {
   return id === null ? "/rooms" : `/rooms?id=${encodeURIComponent(id)}`;
 }
 
-/** The screen for each "Open the app on" choice in Settings. See app/page.tsx. */
-export const START_SCREEN_HREF = { folders: "/rooms", due: "/due" } as const;
+/**
+ * The screen for each "Open the app on" choice in Settings. See app/(app)/page.tsx. `satisfies`
+ * makes a new choice fail typecheck until it has a screen here.
+ */
+export const START_SCREEN_HREF = { folders: "/rooms", due: "/due" } as const satisfies Record<StartScreenChoice, string>;

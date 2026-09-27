@@ -26,8 +26,11 @@ export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = { theme: "system", size
 
 export const DISPLAY_SETTINGS_KEY = "sincewhen:display";
 
-/** The browser bar color for each resolved theme: the page background, as a hex color. */
-const BAR_COLOR = { light: "#ffffff", dark: "#0a0a0a" } as const;
+/**
+ * The browser bar color for each resolved theme: the page background, as a hex color. The light one
+ * is also the default in app/layout.tsx and the install color in app/manifest.ts.
+ */
+export const BAR_COLOR = { light: "#ffffff", dark: "#0a0a0a" } as const;
 
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 

@@ -207,5 +207,22 @@ A promotional page at `/about`, first draft 2026-09-26. Details and open questio
   (schema v2 with a migration; `batchId` is only needed for undo, so roughly 9 times the room),
   or IndexedDB, likely together with Supabase sync. Either changes the saved and backup format:
   old backups must still import. See `docs/scaling-and-algorithm-audit.md`.
+
+  **Decided 2026-09-26: leave the log alone until the history view is built, then choose the
+  rule it needs.** Trimming now would delete history before anything uses it, and cannot be
+  undone. Options weighed:
+  - *Keep the last N per task* (about 20): a good cap. Storage is bounded for good (300 tasks x
+    20 is about 13% of the limit), every task keeps enough intervals for frequency suggestions,
+    and undo only needs the newest entry.
+  - *Keep the last N overall*: rejected. One daily task pushes every other task out in weeks.
+  - *Keep the last 90 days or 1 year*: rejected. It deletes the history of rare tasks (a yearly
+    task has one entry at most), the ones people most need reminding about, while keeping
+    hundreds of entries for daily tasks.
+  - *Compact format*: loses nothing and gives about 9 times the room; can combine with a
+    per-task cap.
+  - *Longer history as a paid tier*: only meaningful once data lives on Supabase; on the device
+    a limit just deletes the user's own data. The data is tiny even on a server (a heavy user
+    adds about 1 MB a year), so sharing, multiple users and push notifications are more natural
+    paid features.
 - **Templates** for common rooms. Until then, duplicate a subtree and edit the frequencies.
 - **Merge on import** instead of replace.

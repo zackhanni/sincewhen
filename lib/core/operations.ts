@@ -140,7 +140,8 @@ export type DuplicateOptions = {
 
 /**
  * Copies a node and everything inside it under `newParentId`. This is how "the same chore, but a
- * different frequency in the guest bathroom" works: duplicate, move, then edit the frequency.
+ * different frequency in the guest bathroom" works: duplicate it into the guest bathroom, then edit
+ * the frequency.
  */
 export function duplicateSubtree(
   data: AppData,

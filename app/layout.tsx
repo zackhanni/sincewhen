@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { DisplaySettingsSync } from "@/components/app/display-settings-sync";
-import { DISPLAY_SETTINGS_SCRIPT } from "@/lib/display/display-settings";
+import { BAR_COLOR, DISPLAY_SETTINGS_SCRIPT } from "@/lib/display/display-settings";
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -32,7 +32,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   // The browser bar color. Light here; switched to dark on the device by applyDisplaySettings.
-  themeColor: "#ffffff",
+  themeColor: BAR_COLOR.light,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

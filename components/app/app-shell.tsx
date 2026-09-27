@@ -22,7 +22,10 @@ const TABS = [
   { href: "/settings", label: "Settings", icon: SettingsIcon, isActive: (path: string) => path === "/settings" },
 ];
 
-/** The frame around every screen: loads saved data, then shows the page above a bottom tab bar. */
+/**
+ * The frame around every app screen: loads saved data, then shows the page above a bottom tab bar.
+ * The landing page (/about) has its own layout in app/(marketing).
+ */
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const hasHydrated = useAppStore((state) => state.hasHydrated);
@@ -98,9 +101,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       <Suspense>
         <NodeSheet />
       </Suspense>
-      {/* Above the tab bar, so the Undo button is never hidden behind it. */}
       <Intro />
-      {/* The toast colors follow the app's own choice, not only the device's. */}
+      {/* At the top, so the Undo button is never hidden behind the tab bar. The toast colors follow
+          the app's own choice, not only the device's. */}
       <Toaster position="top-center" theme={theme} />
     </SheetProvider>
   );

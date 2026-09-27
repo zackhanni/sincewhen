@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { StateStorage } from "zustand/middleware";
 import { SCHEMA_VERSION } from "@/lib/core";
-import { CORRUPT_BACKUP_KEY, STORAGE_KEY, createAppStore } from "./app-store";
+import { STORAGE_KEY, UNREADABLE_BACKUP_KEY, createAppStore } from "./app-store";
 
 /** A stand-in for localStorage that tests can read and pre-fill. */
 function memoryStorage(initial: Record<string, string> = {}) {
@@ -100,6 +100,22 @@ describe("app store", () => {
     expect(store.getState().activeLocationId).toBeNull();
   });
 
+  it("falls back to all locations when the active one is moved inside another", async () => {
+    const store = await loadedStore(memoryStorage().storage);
+    const home = store.getState().addNode({ parentId: null, name: "Home", frequency: null, lastCompleted: null });
+    const work = store.getState().addNode({ parentId: null, name: "Work", frequency: null, lastCompleted: null });
+    const garden = store.getState().addNode({ parentId: null, name: "Garden", frequency: null, lastCompleted: null });
+    store.getState().setActiveLocation(home);
+
+    // Moving something else keeps the filter.
+    store.getState().moveNode(garden, work);
+    expect(store.getState().activeLocationId).toBe(home);
+
+    // The Due tab only offers top-level locations, so a filter on a moved one could not be cleared.
+    store.getState().moveNode(home, work);
+    expect(store.getState().activeLocationId).toBeNull();
+  });
+
   describe("unreadable saved data", () => {
     const brokenTree = JSON.stringify({
       version: SCHEMA_VERSION,
@@ -118,11 +134,11 @@ describe("app store", () => {
       const store = await loadedStore(storage);
       expect(store.getState().loadError).toContain("does not exist");
       expect(store.getState().hasHydrated).toBe(true);
-      expect(items.get(CORRUPT_BACKUP_KEY)).toBe(brokenTree);
+      expect(items.get(UNREADABLE_BACKUP_KEY)).toBe(brokenTree);
 
       // Even after the user carries on and the main key is rewritten, the backup survives.
       store.getState().addNode({ parentId: null, name: "Home", frequency: null, lastCompleted: null });
-      expect(items.get(CORRUPT_BACKUP_KEY)).toBe(brokenTree);
+      expect(items.get(UNREADABLE_BACKUP_KEY)).toBe(brokenTree);
     });
 
     it("keeps warning on later launches, until the parked copy is discarded", async () => {
@@ -138,7 +154,7 @@ describe("app store", () => {
 
       second.getState().discardUnreadableBackup();
       expect(second.getState().hasUnreadableBackup).toBe(false);
-      expect(items.has(CORRUPT_BACKUP_KEY)).toBe(false);
+      expect(items.has(UNREADABLE_BACKUP_KEY)).toBe(false);
       expect((await loadedStore(storage)).getState().hasUnreadableBackup).toBe(false);
     });
 
@@ -151,7 +167,7 @@ describe("app store", () => {
       const store = await loadedStore(storage);
       expect(store.getState()).toMatchObject({ hasHydrated: true });
       expect(store.getState().loadError).not.toBeNull();
-      expect(items.get(CORRUPT_BACKUP_KEY)).toBe("{not json");
+      expect(items.get(UNREADABLE_BACKUP_KEY)).toBe("{not json");
     });
   });
 });

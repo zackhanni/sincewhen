@@ -220,6 +220,15 @@ room level; a control run with the old yellow on a dark card was flagged, so the
 
 ## State and UI
 
+### State that points at a node must be re-checked on every change to that node, not only delete
+`activeLocationId` (the Due tab's filter) was cleared when its location was deleted, replaced by
+an import, or replaced by the examples, but not when it was moved. Moved inside another location,
+it stopped being top-level, so its filter chip vanished while the list stayed filtered, and with
+one location left the whole filter row hid. Nothing could clear it until the next launch. When
+adding an operation that changes what a node is (its parent, its kind), check every piece of state
+that holds a node id and what it assumes about that node. Found by the readability review,
+2026-09-26; `moveNode` in `app-store.ts` now falls back to all locations, with a test.
+
 ### Render nothing until the store has loaded
 The store starts with empty data and loads from the device in an effect (`skipHydration`),
 because the server has no device storage and the first client render must match it. Anything

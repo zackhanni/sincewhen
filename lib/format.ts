@@ -2,7 +2,8 @@ import type { Frequency, TaskTiming } from "@/lib/core";
 
 // Turns core's numbers into the short phrases shown on a task row.
 
-function plural(count: number, word: string): string {
+/** "1 day", "3 days". Only for words that take a plain "s". */
+export function plural(count: number, word: string): string {
   return `${count} ${word}${count === 1 ? "" : "s"}`;
 }
 

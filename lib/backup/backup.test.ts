@@ -49,7 +49,7 @@ describe("backup", () => {
   });
 
   it("counts tasks, folders (top level included) and history separately", () => {
-    expect(summarizeData(data)).toEqual({ folders: 2, tasks: 2, completions: 1 });
+    expect(summarizeData(data)).toEqual({ folderCount: 2, taskCount: 2, completionCount: 1 });
   });
 
   it("round-trips: what is exported is exactly what is imported", () => {

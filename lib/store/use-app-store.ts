@@ -6,12 +6,6 @@ import type { StateStorage } from "zustand/middleware";
 import { STORAGE_WARNING_CHARS } from "@/lib/core";
 import { createAppStore, type AppState } from "./app-store";
 
-/**
- * localStorage, made safe to touch. It does not exist during server rendering, and reading it
- * throws in some private-browsing modes, so every call is guarded. A failed write must not crash
- * the tap that caused it, but it must not be silent either: the app would look fine while every
- * change was being lost, so the user is told once.
- */
 /** So a run of failed saves shows one warning, not one per tap. Reset when saving works again. */
 let saveFailureReported = false;
 
@@ -26,6 +20,12 @@ function isStorageFull(error: unknown): boolean {
   return error instanceof DOMException && (error.name === "QuotaExceededError" || error.name === "NS_ERROR_DOM_QUOTA_REACHED");
 }
 
+/**
+ * localStorage, made safe to touch. It does not exist during server rendering, and reading it
+ * throws in some private-browsing modes, so every call is guarded. A failed write must not crash
+ * the tap that caused it, but it must not be silent either: the app would look fine while every
+ * change was being lost, so the user is told once.
+ */
 const deviceStorage: StateStorage = {
   getItem: (key) => {
     try {

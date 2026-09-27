@@ -23,11 +23,12 @@ import {
   type StartScreenChoice,
   type ThemeChoice,
 } from "@/lib/display/display-settings";
+import { plural } from "@/lib/format";
 import { useDisplaySettings } from "@/lib/hooks/use-display-settings";
 import { useToday } from "@/lib/hooks/use-today";
 import { isInstalled, requestPersistentStorage } from "@/lib/pwa/pwa";
 import { showError } from "@/lib/show-error";
-import { CORRUPT_BACKUP_KEY } from "@/lib/store/app-store";
+import { UNREADABLE_BACKUP_KEY } from "@/lib/store/app-store";
 import { appStore, useAppStore } from "@/lib/store/use-app-store";
 import { cn } from "@/lib/utils";
 import { InstallSteps } from "./install-steps";
@@ -225,10 +226,9 @@ export function SettingsScreen() {
           them back if this one loses them.
         </p>
         <p className="text-sm">
-          {current.tasks} {current.tasks === 1 ? "task" : "tasks"} in {current.folders}{" "}
-          {current.folders === 1 ? "folder" : "folders"}.{" "}
+          {plural(current.taskCount, "task")} in {plural(current.folderCount, "folder")}.{" "}
           {lastBackupDate
-            ? `Last backup: ${lastBackupDate} (${daysBetween(lastBackupDate, today)} days ago).`
+            ? `Last backup: ${lastBackupDate} (${plural(daysBetween(lastBackupDate, today), "day")} ago).`
             : "Never backed up."}
         </p>
         <label className="flex items-start gap-3 text-sm">
@@ -273,7 +273,7 @@ export function SettingsScreen() {
             <p>
               This backup{pendingImport.exportedAt ? ` from ${pendingImport.exportedAt}` : ""} has{" "}
               <strong>
-                {pendingImport.summary.tasks} tasks in {pendingImport.summary.folders} folders
+                {plural(pendingImport.summary.taskCount, "task")} in {plural(pendingImport.summary.folderCount, "folder")}
               </strong>
               .
             </p>
@@ -281,7 +281,7 @@ export function SettingsScreen() {
               <p>It also sets this device&rsquo;s display ({describeDisplaySettings(pendingImport.displaySettings)}).</p>
             )}
             <p>
-              It will <strong>replace</strong> the {data.nodes.length} items on this device. They will not be
+              It will <strong>replace</strong> the {plural(data.nodes.length, "item")} on this device. They will not be
               merged.
             </p>
             <Button variant="destructive" size="lg" onClick={confirmImport}>
@@ -310,7 +310,7 @@ export function SettingsScreen() {
             variant="outline"
             onClick={() => {
               // Read at the moment of the tap, so the file is whatever is parked right now.
-              const parked = readStorage(CORRUPT_BACKUP_KEY);
+              const parked = readStorage(UNREADABLE_BACKUP_KEY);
               // `!== null`, not truthiness: the parked text can be an empty string, and the button
               // must not silently do nothing while the warning is still showing.
               if (parked !== null) downloadTextFile("sincewhen-unreadable-data.json", parked);

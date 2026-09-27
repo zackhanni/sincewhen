@@ -11,13 +11,17 @@ import {
 } from "@/lib/core";
 import { useToday } from "@/lib/hooks/use-today";
 import { useTreeIndex } from "@/lib/hooks/use-tree-index";
+import { roomHref } from "@/lib/routes";
 import { useAppStore } from "@/lib/store/use-app-store";
 import { cn } from "@/lib/utils";
 import { InstallHint } from "./install-hint";
 import { NodeRow, ROW_LIST } from "./node-row";
 import { StartWithExamplesButton } from "./start-with-examples-button";
 
-/** The home screen: everything overdue or due soon, most urgent first, across all rooms. */
+/**
+ * The Due tab (/due): everything overdue or due soon, most urgent first, across all locations or
+ * filtered to one. The app opens here only when Settings > "Open the app on" is set to Due.
+ */
 export function DueScreen() {
   const index = useTreeIndex();
   const today = useToday();
@@ -81,7 +85,7 @@ export function DueScreen() {
               key={node.id}
               view={{ node, timing, summary: summarizeNode(index, node.id, today) }}
               hasChildren={getChildren(index, node.id).length > 0}
-              location={path.slice(0, -1).map((step) => step.name).join(" › ")}
+              parentPath={path.slice(0, -1).map((step) => step.name).join(" › ")}
             />
           ))}
         </ul>
@@ -92,7 +96,7 @@ export function DueScreen() {
               <p className="mb-2 font-medium text-foreground">Welcome to Sincewhen</p>
               <p>
                 Add a location or category and some tasks in{" "}
-                <Link href="/rooms" className="underline">
+                <Link href={roomHref(null)} className="underline">
                   Folders
                 </Link>
                 . Tasks appear here when they come due.

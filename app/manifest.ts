@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { BAR_COLOR } from "@/lib/display/display-settings";
 
 /** Tells the phone how to install the app: its name, icon, and that it opens without browser bars. */
 export default function manifest(): MetadataRoute.Manifest {
@@ -8,8 +9,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Recurring tasks that come due based on when you last did them.",
     start_url: "/",
     display: "standalone",
-    background_color: "#ffffff",
-    theme_color: "#ffffff",
+    background_color: BAR_COLOR.light,
+    theme_color: BAR_COLOR.light,
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
       { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },

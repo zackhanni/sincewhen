@@ -21,15 +21,17 @@ import {
   type CalendarDate,
 } from "@/lib/core";
 
-// The store is a thin shell around lib/core. It owns three jobs and nothing else:
+// The store is a thin shell around lib/core. It owns four jobs and nothing else:
 //   1. hold the current AppData and swap in the new copy each core operation returns,
 //   2. supply the impure inputs core refuses to touch (today's date, fresh ids),
-//   3. save to the device and load back, distrusting whatever it finds there.
+//   3. save to the device and load back, distrusting whatever it finds there,
+//   4. keep the little state that belongs to this device, not the data: the Due tab's location
+//      filter, the last backup date, and whether an unreadable copy is parked.
 // A refused operation throws a CoreError straight through to the caller, which shows a message.
 
 export const STORAGE_KEY = "sincewhen";
 /** Where unreadable saved data is parked so it is never overwritten. See `loadError`. */
-export const CORRUPT_BACKUP_KEY = "sincewhen:unreadable-backup";
+export const UNREADABLE_BACKUP_KEY = "sincewhen:unreadable-backup";
 
 export type NewNodeForm = {
   parentId: string | null;
@@ -40,7 +42,7 @@ export type NewNodeForm = {
 
 export type AppState = {
   data: AppData;
-  /** The location whose rooms and due tasks are shown. null = show all locations. */
+  /** The location the Due tab is filtered to. null = all locations. */
   activeLocationId: string | null;
   /** The day of the last export, for the "time to back up" nudge. null = never backed up. */
   lastBackupDate: CalendarDate | null;
@@ -92,7 +94,7 @@ export function createAppStore(storage: StateStorage) {
   /** Copies the saved text aside before anything can overwrite it, and raises the flag. */
   function reportUnreadable(reason: string): Partial<AppState> {
     const raw = storage.getItem(STORAGE_KEY);
-    if (typeof raw === "string") storage.setItem(CORRUPT_BACKUP_KEY, raw);
+    if (typeof raw === "string") storage.setItem(UNREADABLE_BACKUP_KEY, raw);
     return { loadError: reason };
   }
 
@@ -112,7 +114,13 @@ export function createAppStore(storage: StateStorage) {
           return id;
         },
         updateNode: (id, edit) => set({ data: updateNode(get().data, id, edit) }),
-        moveNode: (id, newParentId) => set({ data: moveNode(get().data, id, newParentId) }),
+        moveNode: (id, newParentId) => {
+          const data = moveNode(get().data, id, newParentId);
+          // The Due tab's filter only offers top-level locations. If the filtered one was just moved
+          // inside another, fall back to "all" rather than keep a filter with no chip to clear it.
+          const activeMovedInside = id === get().activeLocationId && newParentId !== null;
+          set({ data, activeLocationId: activeMovedInside ? null : get().activeLocationId });
+        },
         duplicateNode: (id, newParentId, resetCompletion) =>
           set({
             data: duplicateSubtree(get().data, id, newParentId, {
@@ -144,7 +152,7 @@ export function createAppStore(storage: StateStorage) {
         replaceAllData: (data) => set({ data, activeLocationId: null, loadError: null }),
         markBackedUp: () => set({ lastBackupDate: todayCalendarDate() }),
         discardUnreadableBackup: () => {
-          storage.removeItem(CORRUPT_BACKUP_KEY);
+          storage.removeItem(UNREADABLE_BACKUP_KEY);
           set({ hasUnreadableBackup: false, loadError: null });
         },
       }),
@@ -158,7 +166,7 @@ export function createAppStore(storage: StateStorage) {
           lastBackupDate: state.lastBackupDate,
         }),
         // Next.js renders on the server first, where there is no device storage. Loading is
-        // started by hand from a client effect (see StoreHydrator) so server and client agree
+        // started by hand from a client effect (see AppShell) so server and client agree
         // on the first render.
         skipHydration: true,
 
@@ -205,7 +213,7 @@ export function createAppStore(storage: StateStorage) {
             hasHydrated: true,
             ...failure,
             // Checked after reportUnreadable, so a copy parked a moment ago is counted too.
-            hasUnreadableBackup: typeof storage.getItem(CORRUPT_BACKUP_KEY) === "string",
+            hasUnreadableBackup: typeof storage.getItem(UNREADABLE_BACKUP_KEY) === "string",
           });
         },
       },
