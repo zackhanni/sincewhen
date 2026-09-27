@@ -17,28 +17,26 @@ locations > rooms > tasks > sub-tasks. Client-only for now: data lives on the de
 
 - `docs/plan.md` — the design and the reason behind each decision. Read before touching the data
   model, due-date logic or completion rules.
-- `docs/pitfalls.md` — traps already hit. **Add an entry whenever you hit a new one.**
-- `docs/roadmap.md` — phase checklists and future additions. Tick items as they land.
+- `docs/pitfalls.md` — traps already hit. Read its **Always read** section every task, plus the
+  sections for the areas you touch. **Add an entry whenever you hit a new one.**
+- `docs/roadmap.md` — open work only. When an item lands, move it to `docs/changelog.md`
+  (finished work, newest first, one entry per PR).
 - `docs/pwa.md` — install steps and alternatives.
 - `docs/landing-page.md` — the promotional page at `/about`: where its copy lives, how its
   screenshots are made, and its open questions.
-- `docs/security-audit.md` — security review rounds: what was found, fixed or declined, and why
-  the Content-Security-Policy has the shape it does.
-- `docs/scaling-and-algorithm-audit.md` — measured costs at realistic sizes, and the storage
-  limit the completion log grows toward.
-- `docs/pagespeed-audit.md` — Lighthouse numbers per page (empty and with tasks, light and dark),
-  what moved them, and how to re-measure (`scripts/pagespeed/`, targets in `pagespeed-targets.json`).
-- `docs/seo.md` — what search engines may index (only `/about`) and why, its structured data and
-  share image, and what was deliberately left out.
-- `docs/readability-review.md` — review rounds, the words the code uses for folder / room /
-  location / item, and small duplication deliberately left alone.
+- Skill reports, one per shared audit skill, each adding a dated round: `docs/security-audit.md`
+  (why the CSP is static), `docs/scaling-and-algorithm-audit.md` (the storage limit),
+  `docs/readability-review.md` (which word means what), `docs/pagespeed-audit.md` (how to
+  re-measure, `scripts/pagespeed/`) and `docs/seo.md` (only `/about` is indexed). Read the one
+  for the area you touch; don't re-raise a finding a round declined.
 - `docs/portfolio-writeup.md` — public-facing copy (portfolio entry, Reddit post) and the
   domain-move checklist. Keep its numbers (tests, review findings) true when they change.
 
 ## Rules
 
 - Never `git commit` or `git push`. Leave changes in the working tree for Zack to review.
-- One branch and one PR per roadmap phase.
+- One branch and one PR per roadmap phase, reviewed by CodeRabbit. Stack at most one deep: the
+  next branch may start from an unmerged one, never further.
 - `lib/core` is pure functions: no React, no store, no `window`. Everything in it has tests.
 - Dates are local calendar dates (`YYYY-MM-DD`). Never call `new Date()` on a bare date string;
   use the helpers in `lib/core`.

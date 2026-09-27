@@ -8,12 +8,12 @@ when it is opened in a browser tab.
 
 **iPhone / iPad (Safari):** open the site, tap Share, then "Add to Home Screen". On iOS 26 Share
 is inside the ••• menu, and "Add to Home Screen" is under View More: ••• → Share → View More →
-Add to Home Screen → Add (Zack, 2026-09-26). Open the app from the home-screen icon from then on
+Add to Home Screen → Add (checked on an iPhone, iOS 26). Open the app from the home-screen icon from then on
 — data created in the Safari tab does not carry over, because the installed app has its own
 storage. Export first if you already have data in Safari.
 
-**Other iPhone browsers:** Brave has no "Add to Home Screen" at all, not even under Share (Zack,
-2026-09-26), and it does not name itself to the page, so the app cannot detect it and point to
+**Other iPhone browsers:** Brave has no "Add to Home Screen" at all, not even under Share (checked
+on an iPhone), and it does not name itself to the page, so the app cannot detect it and point to
 Safari. The steps (`components/app/install-steps.tsx`, shown in the install hint, Settings and
 the intro) therefore end with a general "Can't find it? Open this page in Safari".
 
@@ -83,9 +83,9 @@ delete the previous cache. There is nothing to bump by hand, and old build files
 Adding a page to the app still means adding it to `PAGES` in `sw.js`, or it will not open offline.
 
 The version in Settings > About (`NEXT_PUBLIC_APP_VERSION`) is the date of the built commit, read
-with `git log` in `next.config.ts`. If git is not available in Vercel's build, it falls back to the
-build date, which on a deploy-on-merge setup is the same day (UTC). Check the live Settings screen
-after the first deploy to see which one it used.
+with `git log` in `next.config.ts`. If git is not available in the build, it falls back to the
+build date (UTC). Vercel's build has git: the live site showed the commit's date for a build made
+the next day (checked 2026-09-27).
 
 ## Alternatives, if a PWA stops being enough
 

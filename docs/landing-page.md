@@ -1,8 +1,8 @@
 # Sincewhen — landing page
 
 A promotional page that says what Sincewhen is and why to use it, like a product company's
-home page. This is a first draft (branch `landing-page`, 2026-09-26): the content is meant to
-be close to final, and the design is a plain starting point for a later pass with Claude Design.
+home page. It shipped in PR #7: the content is meant to be close to final, and the design is a
+plain starting point for a later pass with Claude Design.
 
 It lives at **`/about`**.
 
@@ -42,11 +42,17 @@ theme, and the Large size too if they chose it in the app.
 ## Rules for the copy
 
 - American spelling and phrasing throughout, in the app too (color, organized, "check off",
-  "right away"). Switched from British on 2026-09-26.
+  "right away").
 - Every claim must be true of the app as shipped. Anything not built says "not yet"
   (reminders, sharing with a household, syncing between devices).
 - No invented numbers and no testimonials until real users have given a quote and permission to
   use it.
+
+## Search engines and sharing
+
+Only `/about` is meant to be found: the app's own screens are `noindex`, the sitemap lists only
+this page, and `opengraph-image.tsx` in this folder draws the share picture at build time from
+the hero copy and the Folders screenshot. Share `/about` links. Details: [seo.md](seo.md).
 
 ## Checked
 
@@ -59,12 +65,5 @@ issues, nothing scrolls sideways, no console errors, and "Open Sincewhen" lands 
   `/` show it to first-time browser visitors (not installed, no data) while installed apps and
   returning users go straight to the app; or give it its own domain later.
 - **Logo.** The three status dots beside the name are a placeholder, like the app icon.
-- **Sharing preview.** Done 2026-09-27: `app/(marketing)/about/opengraph-image.tsx` draws a
-  1200×630 card at build time from the hero copy and the Folders screenshot (see docs/seo.md).
-  Share `/about` links: the app's own screens have no preview image.
 - **Offline.** `/about` is not in the service worker's page list, so offline it falls back to the
   app. Fine for a marketing page.
-- **Search engines.** Done 2026-09-27 (docs/seo.md): the page has a canonical link on
-  `SITE_URL` (`lib/site.ts`), `app/sitemap.ts` lists only `/about`, `app/robots.ts` allows
-  crawling, and the app's own screens (`/`, `/due`, `/rooms`, `/settings`) are `noindex` from
-  `app/(app)/layout.tsx`, because they show nothing without saved data.
