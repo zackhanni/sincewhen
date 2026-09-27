@@ -23,9 +23,9 @@ the intro) therefore end with a general "Can't find it? Open this page in Safari
 
 ## The QR code
 
-On a computer, the intro's last page shows `public/qr-code.svg`, a QR code for
-`https://sincewhen.webwizarddev.com`. It is a static file made once with the `qrcode` npm
-package. If the address ever changes, remake it:
+On a computer, the intro's last page and the landing page show `public/qr-code.svg`, a QR code
+for `SITE_URL` in `lib/site.ts` (`https://sincewhen.webwizarddev.com`). It is a static file made
+once with the `qrcode` npm package. If the address ever changes, remake it:
 
 ```sh
 npx -y qrcode -t svg -o public/qr-code.svg "https://new.address"

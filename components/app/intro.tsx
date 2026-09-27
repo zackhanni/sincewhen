@@ -6,6 +6,7 @@ import { CheckIcon, CircleAlertIcon, FolderIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { isInstalled } from "@/lib/pwa/pwa";
+import { SITE_HOST } from "@/lib/site";
 import { ROOM_BADGE, ROOM_BORDER, TASK_BAR, TASK_DUE_TEXT } from "@/lib/status-styles";
 import { useAppStore } from "@/lib/store/use-app-store";
 import { cn } from "@/lib/utils";
@@ -198,7 +199,7 @@ function buildPages({ onDesktop, installed }: { onDesktop: boolean; installed: b
           <Image
             src="/qr-code.svg"
             unoptimized
-            alt="QR code for sincewhen.webwizarddev.com"
+            alt={`QR code for ${SITE_HOST}`}
             width={176}
             height={176}
             className="mx-auto rounded-lg bg-white p-2"

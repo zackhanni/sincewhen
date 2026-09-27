@@ -51,7 +51,10 @@ next phase may branch from an unmerged phase, but never further than that.
 - [x] Serve at `sincewhen.webwizarddev.com` (live 2026-09-24). A new domain is an empty app,
       so back up on the old address and restore on the new one.
 - [ ] Old address redirects to the new one: `next.config.ts` sends `sincewhen-ruby.vercel.app`
-      to `sincewhen.webwizarddev.com` (307) on branch `launch-prep`. Deploys when merged.
+      to `sincewhen.webwizarddev.com`, permanently (308), keeping the path. Deploys when merged;
+      until then the live old address still answers 200. Safe: Zack is the only person with
+      data on the old address, and it is backed up (confirmed 2026-09-26). From then on,
+      `sincewhen.webwizarddev.com` is the only address to use, until the app gets its own site.
 - [x] Small-text contrast with tasks loaded: gray text on long-overdue rows and the orange and
       red room badges were under 4.5:1. Lighthouse accessibility 96 → 100 on the 3 affected
       screens (local production build with sample tasks, 2026-09-25; branch `launch-prep`).

@@ -208,6 +208,10 @@ data and returns a new copy; a refused operation throws a `CoreError` with a `co
 saved data, intro), `(marketing)` holds the landing page (`/about`, see landing-page.md). The
 root layout has only what both share.
 
+`lib/site.ts` holds the app's one public address (`SITE_URL`, https://sincewhen.webwizarddev.com)
+and the retired ones, which only redirect to it. Anything that needs an absolute URL reads it
+from there.
+
 `lib/store` wraps core in a zustand store (`app-store.ts` is framework-free and tested;
 `use-app-store.ts` binds it to React and localStorage). `components/app` holds the screens:
 `app-shell` (loading, tab bar), `due-screen`, `node-screen`, `node-row`, and one shared bottom

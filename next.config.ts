@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import type { NextConfig } from "next";
+import { RETIRED_HOSTS, SITE_URL } from "./lib/site";
 
 /** Runs git with these arguments and returns its output, or null where git or the repo is not available. */
 function git(...args: string[]): string | null {
@@ -34,19 +35,19 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_COMMIT: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? git("rev-parse", "--short=7", "HEAD") ?? "",
   },
   async redirects() {
-    return [
-      {
-        // The app's first address now sends visitors to the real domain, keeping the path and
-        // query. Browser storage belongs to one address, so anything saved on the old one has to
-        // be backed up there and restored here first (Settings > Back up). Temporary (307) on
-        // purpose: browsers cache a permanent redirect, which would lock the old address's data
-        // away for good if it is ever needed again. Remove this rule to reach it.
-        source: "/:path*",
-        has: [{ type: "host", value: "sincewhen-ruby.vercel.app" }],
-        destination: "https://sincewhen.webwizarddev.com/:path*",
-        permanent: false,
-      },
-    ];
+    // Old addresses send every visitor to the real one, keeping the path and query.
+    //
+    // Permanent (308), so browsers and search engines drop the old address for good. That
+    // also locks away anything still saved in a browser at the old address (storage belongs
+    // to one address, and browsers cache a permanent redirect), so it is only safe once nobody
+    // has data left there: back up at the old address and restore here first. Preview
+    // deployments have their own addresses and are not affected.
+    return RETIRED_HOSTS.map((host) => ({
+      source: "/:path*",
+      has: [{ type: "host" as const, value: host }],
+      destination: `${SITE_URL}/:path*`,
+      permanent: true,
+    }));
   },
   async headers() {
     return [

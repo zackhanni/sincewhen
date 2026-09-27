@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { DisplaySettingsSync } from "@/components/app/display-settings-sync";
 import { DISPLAY_SETTINGS_SCRIPT } from "@/lib/display/display-settings";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,6 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  // Makes relative metadata URLs (canonical, link previews) absolute on the real address, even
+  // when the page is served from a preview deployment.
+  metadataBase: new URL(SITE_URL),
   title: "Sincewhen",
   description: "Recurring tasks that come due based on when you last did them.",
   // Makes iOS open the installed app full-screen, with the name shown under its icon.

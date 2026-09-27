@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { ArrowRightIcon, CheckIcon } from "lucide-react";
 import { InstallSteps } from "@/components/app/install-steps";
 import { buttonVariants } from "@/components/ui/button";
+import { SITE_HOST } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import {
   APP_HREF,
@@ -27,10 +28,12 @@ export const metadata: Metadata = {
   title: "Sincewhen: for the things you do every so often",
   description:
     "A free app for recurring chores. Each task comes due a set time after you last did it, and colors show what needs doing. No account, works offline.",
+  // One address for this page in search results (resolved against metadataBase in app/layout.tsx).
+  alternates: { canonical: "/about" },
   openGraph: {
     title: "Sincewhen: for the things you do every so often",
     description: "Recurring chores that come due based on when you last did them. Free, private, works offline.",
-    url: "https://sincewhen.webwizarddev.com/about",
+    url: "/about",
     siteName: "Sincewhen",
     type: "website",
   },
@@ -197,7 +200,7 @@ export default function AboutPage() {
             <Image
               src="/qr-code.svg"
               unoptimized
-              alt="QR code for sincewhen.webwizarddev.com"
+              alt={`QR code for ${SITE_HOST}`}
               width={176}
               height={176}
               className="rounded-lg bg-white p-2"

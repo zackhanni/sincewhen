@@ -89,9 +89,12 @@ the script throw when the expected state never arrives.
 ### The old address keeps its own data
 Browser storage belongs to one address. Moving from `sincewhen-ruby.vercel.app` to
 `sincewhen.webwizarddev.com` started an empty app, and an installed home-screen icon keeps
-opening the address it was installed from. `next.config.ts` now redirects the old address
-(307, temporary on purpose, so the old data can still be reached by removing the rule). Back up
-on the old address and restore on the new one before relying on the redirect.
+opening the address it was installed from. `next.config.ts` redirects the old address. It was
+a temporary 307 at first, so the old data stayed reachable by removing the rule. Since
+2026-09-26 it is a permanent 308: the only data there (Zack's) was backed up and moved, and
+the old address is retired. Browsers cache a permanent redirect, so from then on anything
+saved at the old address is out of reach in that browser. Old addresses are listed in
+`RETIRED_HOSTS` in `lib/site.ts`; never link to them.
 
 ### The icon badge needs notification permission on iOS
 `navigator.setAppBadge` runs without error, but iOS shows a home-screen web app's badge only

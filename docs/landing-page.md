@@ -62,4 +62,7 @@ issues, nothing scrolls sideways, no console errors, and "Open Sincewhen" lands 
 - **Sharing preview.** There is no Open Graph image yet, so a shared link shows no picture.
 - **Offline.** `/about` is not in the service worker's page list, so offline it falls back to the
   app. Fine for a marketing page.
-- **Search engines.** No sitemap or robots file yet.
+- **Search engines.** The page has a canonical link on `SITE_URL` (`lib/site.ts`), and
+  `metadataBase` makes every relative metadata URL absolute there. Still missing: a sitemap
+  and robots file, and `noindex` on the app's own screens (`/`, `/due`, `/rooms`, `/settings`).
+  Those screens show nothing without saved data, so only `/about` is worth indexing.
