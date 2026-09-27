@@ -29,8 +29,9 @@ locations > rooms > tasks > sub-tasks. Client-only for now: data lives on the de
   `docs/readability-review.md` (which word means what), `docs/pagespeed-audit.md` (how to
   re-measure, `scripts/pagespeed/`) and `docs/seo.md` (only `/about` is indexed). Read the one
   for the area you touch; don't re-raise a finding a round declined.
-- `docs/portfolio-writeup.md` — public-facing copy (portfolio entry, Reddit post) and the
-  domain-move checklist. Keep its numbers (tests, review findings) true when they change.
+- `docs/portfolio-writeup.md` — public-facing copy (portfolio entry, resume bullets, Reddit post),
+  every number with an Evidence row. Keep its numbers (tests, review findings) true when they
+  change; `/portfolio-writeup numbers` re-checks them.
 
 ## Rules
 

@@ -29,9 +29,10 @@ After PR #8 (`skill-pass`) is merged and deployed:
 
 ## Launch (owner: Zack)
 
-- [ ] Add the entry and 5 screenshots to the `/portfolio` page of `web-wizard-dev-v2`. Refresh
-      the write-up first (`/portfolio-writeup`): round 2, the landing page and the skill pass are
-      not in it, and the draft in `ai-skills/knowledge/repos/sincewhen/` still describes v1.
+- [ ] Paste the entry from `docs/portfolio-writeup.md` (refreshed 2026-09-27) into the
+      `/portfolio` page of `web-wizard-dev-v2`, with the six landing-page screenshots as its
+      gallery and a cover still to make. Its "Before publishing" list says what must happen
+      before `draft: true` comes off.
 - [ ] Reddit post for outside testers, after the phone checks below. Link `/about`.
 
 ## Still to verify on a real phone
@@ -82,6 +83,11 @@ Details and open questions: [landing-page.md](landing-page.md).
   per node, plus `user_id`). Add TanStack Query for the sync layer at that point.
 - **Push notifications.** Needs a server: Supabase + a cron job + Web Push. On iOS, web push
   only works for an installed PWA.
+- **A notification permission prompt, so the overdue count can show on the app icon** (decided
+  2026-09-27). iOS shows a home-screen app's icon number only after the user allows
+  notifications, and the app never asks. Ask at a moment the user has a reason to say yes,
+  then re-test the icon number on an iPhone ("Still to verify on a real phone"). Chrome on
+  Android shows no icon number at all.
 - **GPS location switching.** Store coordinates on a location and switch the active location
   when the device is near it. Needs a permission prompt and a manual override.
 - **A designed app icon.** The current one is a placeholder drawn in `app/icon.svg`; the PNGs in
