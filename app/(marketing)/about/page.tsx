@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { ArrowRightIcon, CheckIcon } from "lucide-react";
 import { InstallSteps } from "@/components/app/install-steps";
 import { buttonVariants } from "@/components/ui/button";
-import { SITE_HOST } from "@/lib/site";
+import { SITE_HOST, SITE_URL } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import {
   APP_HREF,
@@ -14,6 +14,7 @@ import {
   finalCta,
   hero,
   install,
+  maker,
   privacy,
   problems,
   screens,
@@ -24,10 +25,12 @@ import {
 // The promotional landing page: what Sincewhen is and why to use it. A first draft to be
 // redesigned later — the layout is deliberately plain, and all the words live in content.ts.
 
+const DESCRIPTION =
+  "A free app for recurring chores. Each task comes due a set time after you last did it, and colors show what needs doing. No account, works offline.";
+
 export const metadata: Metadata = {
   title: "Sincewhen: for the things you do every so often",
-  description:
-    "A free app for recurring chores. Each task comes due a set time after you last did it, and colors show what needs doing. No account, works offline.",
+  description: DESCRIPTION,
   // One address for this page in search results (resolved against metadataBase in app/layout.tsx).
   alternates: { canonical: "/about" },
   openGraph: {
@@ -92,9 +95,32 @@ function OpenAppButton({ label }: { label: string }) {
   );
 }
 
+/**
+ * Structured data: tells search engines this page is about a free web app, and who made it.
+ * Every value comes from constants on this page or in content.ts, so it cannot drift from what
+ * the page says.
+ */
+const APP_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "Sincewhen",
+  url: SITE_URL,
+  description: DESCRIPTION,
+  applicationCategory: "LifestyleApplication",
+  operatingSystem: "Any",
+  isAccessibleForFree: true,
+  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+  publisher: { "@type": "Organization", name: maker.name, url: maker.url },
+};
+
 export default function AboutPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        // Escaping "<" keeps the JSON from ever closing the script tag (Next.js JSON-LD guide).
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(APP_JSON_LD).replace(/</g, "\\u003c") }}
+      />
       {/* Hero */}
       <section className="px-4 pt-12 pb-16 sm:pt-20 sm:pb-24">
         <div className="mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-[1.2fr_1fr]">

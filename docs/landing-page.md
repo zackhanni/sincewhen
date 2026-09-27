@@ -59,10 +59,12 @@ issues, nothing scrolls sideways, no console errors, and "Open Sincewhen" lands 
   `/` show it to first-time browser visitors (not installed, no data) while installed apps and
   returning users go straight to the app; or give it its own domain later.
 - **Logo.** The three status dots beside the name are a placeholder, like the app icon.
-- **Sharing preview.** There is no Open Graph image yet, so a shared link shows no picture.
+- **Sharing preview.** Done 2026-09-27: `app/(marketing)/about/opengraph-image.tsx` draws a
+  1200×630 card at build time from the hero copy and the Folders screenshot (see docs/seo.md).
+  Share `/about` links: the app's own screens have no preview image.
 - **Offline.** `/about` is not in the service worker's page list, so offline it falls back to the
   app. Fine for a marketing page.
-- **Search engines.** The page has a canonical link on `SITE_URL` (`lib/site.ts`), and
-  `metadataBase` makes every relative metadata URL absolute there. Still missing: a sitemap
-  and robots file, and `noindex` on the app's own screens (`/`, `/due`, `/rooms`, `/settings`).
-  Those screens show nothing without saved data, so only `/about` is worth indexing.
+- **Search engines.** Done 2026-09-27 (docs/seo.md): the page has a canonical link on
+  `SITE_URL` (`lib/site.ts`), `app/sitemap.ts` lists only `/about`, `app/robots.ts` allows
+  crawling, and the app's own screens (`/`, `/due`, `/rooms`, `/settings`) are `noindex` from
+  `app/(app)/layout.tsx`, because they show nothing without saved data.
