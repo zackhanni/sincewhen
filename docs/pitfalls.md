@@ -278,6 +278,13 @@ theme's screenshot downloaded too: two preload links and both files, measured. L
 variants lazy (a hidden lazy image is never fetched) and give the visible one
 `fetchPriority="high"`, as the Next.js image docs say under "Theme detection".
 
+### `cn` from the `cn` package is the project's helper
+`lib/utils.ts` is `export { cn } from "cn"`, and the shadcn CLI (base-nova style) writes
+`import { cn } from "cn"` into every `components/ui` file. The package is a clsx +
+tailwind-merge replacement: `cn("sm:max-w-sm", "sm:max-w-md")` gives `"sm:max-w-md"`. A review
+suggested switching `dialog.tsx` to `@/lib/utils` as if they were different; they are not, and
+the ui files must stay as generated.
+
 ### A link styled as a button needs `cn(buttonVariants(...))`
 `buttonVariants` returns the base style's `border-transparent` and the outline style's
 `border-border` together, and in the generated CSS the transparent one wins. A `<Link>` given

@@ -46,6 +46,23 @@ next phase may branch from an unmerged phase, but never further than that.
 - [x] Import: zod validation, preview with counts, replace
 - [x] Backup-age nudge
 
+## Next steps, right after PR #7 merges
+
+PR #7 (`landing-page` → `main`) carries `launch-prep` too: round 2, the landing page and both
+rounds of CodeRabbit fixes. Once it is merged and deployed:
+
+- [ ] `git switch main && git pull` (local `main` was behind GitHub).
+- [ ] The old address forwards: `curl -sI https://sincewhen-ruby.vercel.app/rooms` shows 308 to
+      `https://sincewhen.webwizarddev.com/rooms`.
+- [ ] `https://sincewhen.webwizarddev.com/about` answers 200 and its page source has
+      `<link rel="canonical" href="https://sincewhen.webwizarddev.com/about">`.
+- [ ] Settings > About shows a version like `2026.9.26 (a698c9e)`. If the date is the build day
+      instead of the commit day, git was not available in Vercel's build (see pwa.md).
+- [ ] Re-measure accessibility on the live site, light and dark, with tasks loaded (see the
+      contrast item below and pitfalls.md > Accessibility).
+- [ ] Open the installed app once with internet so it picks up the new version, then work
+      through "Still to verify on a real phone" and "Still to decide or check" below.
+
 ## Launch (owner: Zack)
 
 - [x] Serve at `sincewhen.webwizarddev.com` (live 2026-09-24). A new domain is an empty app,
@@ -59,7 +76,9 @@ next phase may branch from an unmerged phase, but never further than that.
       red room badges were under 4.5:1. Lighthouse accessibility 96 → 100 on the 3 affected
       screens (local production build with sample tasks, 2026-09-25; branch `launch-prep`).
       Re-measure on the live site after it deploys.
-- [ ] Add the entry and 5 screenshots to the `/portfolio` page of `web-wizard-dev-v2`.
+- [ ] Add the entry and 5 screenshots to the `/portfolio` page of `web-wizard-dev-v2`. Refresh
+      the write-up first (`/portfolio-writeup`): round 2 and the landing page are not in it, and
+      the draft in `ai-skills/knowledge/repos/sincewhen/` still describes v1.
 - [ ] Reddit post for outside testers, after the phone checks below.
 
 ## Still to verify on a real phone
@@ -77,9 +96,9 @@ Headless Chromium cannot exercise these, so they are built but unproven:
 
 ## Launch prep, round 2
 
-Agreed with Zack on 2026-09-26. Everything goes on branch `launch-prep`. Items marked "nice to
-have" can ship after the Reddit post; the rest land before it. Built 2026-09-26 (uncommitted),
-checked in a headless browser and with axe-core; the items under "Still to check" need Zack.
+Agreed with Zack on 2026-09-26. Built the same day on `launch-prep`, reviewed by CodeRabbit on
+PR #7, and shipped with it. Checked in a headless browser and with axe-core; the items under
+"Still to decide or check" need Zack and a real device.
 
 ### Built
 
@@ -129,17 +148,15 @@ checked in a headless browser and with axe-core; the items under "Still to check
       browser; confirm with the airplane-mode check under "Still to verify on a real phone".
 - [ ] The edge swipe on a real iPhone, in the installed app. If iOS ever adds its own back
       swipe to home-screen apps, both would fire and this one should go.
-
 - [ ] Tab name: "Folders" for now. "All" was the first idea but clashes with the "All" chip on
       the Due tab.
 - [ ] On the iPhone: the status bar in dark mode in the installed app (`layout.tsx` sets
       `statusBarStyle: "default"`; untested in dark), Large size, the intro, and the install
       steps as written.
 - [ ] On the iPad: the two-column layout, portrait and landscape, and the install steps there.
-- [ ] On the live site: which date the version shows (git or build-date fallback, see pwa.md).
 - [ ] Edit the example list in `lib/core/examples.ts` if it should differ.
 
-## Landing page (branch `landing-page`)
+## Landing page (PR #7)
 
 A promotional page at `/about`, first draft 2026-09-26. Details and open questions are in
 [landing-page.md](landing-page.md).

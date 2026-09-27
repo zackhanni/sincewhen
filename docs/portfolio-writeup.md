@@ -120,9 +120,9 @@ files first (see "Screenshots to capture" below) and adjust `externalLink` once 
     ],
     results: [
       "A complete, installable v1 shipped in a weekend: works offline, no account, no backend costs.",
-      "All scheduling, ranking and completion rules covered by 142 automated tests; every bug fix landed with a test proven to fail on the old code.",
+      "All scheduling, ranking and completion rules covered by 142 automated tests; every fix to those rules landed with a test proven to fail on the old code.",
       "Backup and restore verified on a real iPhone, with a file that moves through Messages, Mail, AirDrop or Files.",
-      "20 automated code-review findings triaged: 16 fixed, 4 declined with recorded reasons.",
+      "30 automated code-review findings triaged across 6 pull requests: 24 fixed, 6 declined with recorded reasons.",
       "Architecture ready for cloud sync: the storage layer is a single swappable interface and the data model maps 1:1 to database rows.",
     ],
     caseSummary:

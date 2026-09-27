@@ -33,7 +33,9 @@ locations > rooms > tasks > sub-tasks. Client-only for now: data lives on the de
 - Dates are local calendar dates (`YYYY-MM-DD`). Never call `new Date()` on a bare date string;
   use the helpers in `lib/core`.
 - Never edit `components/ui/*`. Wrap or re-theme instead, so shadcn updates stay safe.
-- Tunable thresholds (status, room color, depth limit) live in one constants file.
+- Tunable thresholds (status, room color, depth limit, unit conversion) live in one constants file.
+- The app's address is `SITE_URL` in `lib/site.ts`. Never hard-code it, and never link the
+  retired `sincewhen-ruby.vercel.app`.
 - Keep explanatory "why" comments; write so the purpose is obvious on first read.
 
 ## Commands
