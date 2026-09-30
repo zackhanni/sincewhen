@@ -3,6 +3,21 @@
 Finished work, newest first. How things work now is in [plan.md](plan.md); traps are in
 [pitfalls.md](pitfalls.md); open work is in [roadmap.md](roadmap.md).
 
+## 2026-09-30 — Done-today check on the task circle, clearer intro (PR pending)
+
+**What:** a task completed today shows its circle filled green with a white check, instead of
+the empty circle, until the date changes. `getTaskTiming` returns `doneToday`
+(`lastCompleted === today`); a task created today but never completed is not done today. Undo
+clears it. The row's label says "was done today. Mark done again", because a second tap still
+completes it (another log entry, same date).
+Same PR: a pass over the intro text with Emily's notes. The first page now says to add each
+chore as a task and set how often it repeats; page 2 says an item that does not repeat is a
+folder; the colors page explains yellow, red and the (!) icon, and shows a third, red folder;
+the storage line again says tasks stay only on this device (an edit had made it read as if a
+backup moved them off it).
+**Why:** Zack wanted to see at a glance what was already done today; Emily found the intro
+unclear in places.
+
 ## 2026-09-27 — Skill pass: security, scaling, readability, page speed, SEO, docs (PR #8)
 
 **What:** one pass of the shared audit skills over the whole app, each with its own report:

@@ -14,6 +14,8 @@ export type TaskTiming = {
   /** elapsed / interval. 0 = just completed, 1 = due today, 2 = a whole interval late. */
   progress: number;
   status: TaskStatus;
+  /** Checked off today. The row shows a filled green check instead of an empty circle. */
+  doneToday: boolean;
 };
 
 /**
@@ -38,7 +40,14 @@ export function getTaskTiming(node: TaskNode, today: CalendarDate): TaskTiming |
   // (where the cycle has no real start) needs no special handling.
   const progress = 1 - daysUntilDue / intervalDays;
 
-  return { dueDate, intervalDays, daysUntilDue, progress, status: getStatus(daysUntilDue, intervalDays, progress) };
+  return {
+    dueDate,
+    intervalDays,
+    daysUntilDue,
+    progress,
+    status: getStatus(daysUntilDue, intervalDays, progress),
+    doneToday: node.lastCompleted === today,
+  };
 }
 
 function getStatus(daysUntilDue: number, intervalDays: number, progress: number): TaskStatus {

@@ -27,6 +27,16 @@ describe("getTaskTiming", () => {
     expect(getTaskTiming(airFilter, "2026-01-01")).toMatchObject({ progress: 0, status: "ok" });
   });
 
+  it("is done today only on the day it was completed", () => {
+    expect(getTaskTiming(airFilter, "2026-01-01")!.doneToday).toBe(true);
+    expect(getTaskTiming(airFilter, "2026-01-02")!.doneToday).toBe(false);
+  });
+
+  it("is not done today when it was created today but never completed", () => {
+    const newTask = makeNode("new", null, { frequency: { count: 1, unit: "week" }, createdAt: "2026-06-01" });
+    expect(getTaskTiming(newTask, "2026-06-01")!.doneToday).toBe(false);
+  });
+
   it("turns yellow once 80% of the cycle has passed", () => {
     expect(statusOn("2026-02-17")).toBe("ok"); // day 47 of 59 = 0.797
     expect(statusOn("2026-02-18")).toBe("soon"); // day 48 of 59 = 0.814

@@ -103,11 +103,13 @@ function buildPages({ onDesktop, installed }: { onDesktop: boolean; installed: b
       body: (
         <>
           <p>
-            For the things you do every so often: change the air filter, wash the sheets, book the dentist.
+            Keep track of the things you do every so often, like changing the air filter, washing the sheets or
+            booking the dentist.
           </p>
+          <p>Add each one as a task and set how often it should repeat, such as every 2 weeks.</p>
           <p>
-            Each task comes due a set time after you <strong>last did it</strong>, not on a fixed date. Do it late,
-            and the next one simply counts from the day you did.
+            A task comes due that long after you <strong>last did it</strong>, not on a fixed date. Do it late, and
+            the next one counts from the day you did it.
           </p>
         </>
       ),
@@ -117,9 +119,10 @@ function buildPages({ onDesktop, installed }: { onDesktop: boolean; installed: b
       body: (
         <>
           <p>
-            Start with a location or a category, such as Home, Car or Cleaning. Put rooms or more folders inside,
-            then tasks. A task can have its own sub-tasks.
+            Start with a location or a category, such as Home, Car or Cleaning. Inside it, add rooms or more
+            folders, then your tasks. A task can have sub-tasks too.
           </p>
+          <p>An item that does not repeat is a folder.</p>
           <ul className="flex flex-col gap-1 rounded-lg border bg-muted/40 p-3">
             <li className="flex items-center gap-2">
               <FolderIcon className="size-4 text-muted-foreground" /> Home
@@ -134,12 +137,12 @@ function buildPages({ onDesktop, installed }: { onDesktop: boolean; installed: b
       ),
     },
     {
-      title: "Check it off, the clock restarts",
+      title: "Check it off, then the clock restarts",
       body: (
         <>
           <p>
-            Tap the circle next to a task when you have done it. It turns green again, and its next due date counts
-            from today.
+            When you finish a task, tap the circle next to it. The task turns green again, and its next due date
+            counts from today. The circle keeps its check until the end of the day.
           </p>
           <p className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2">
             <span className="flex size-5 items-center justify-center rounded-full bg-green-500 text-white">
@@ -147,25 +150,26 @@ function buildPages({ onDesktop, installed }: { onDesktop: boolean; installed: b
             </span>
             Wash the sheets &middot; <span className="text-muted-foreground">due in 2 weeks</span>
           </p>
-          <p>Every check-off is recorded, and a tap by mistake can be undone right away.</p>
+          <p>Tapped it by mistake? Press Undo in the message that appears.</p>
         </>
       ),
     },
     {
-      title: "Colors show what needs doing",
+      title: "Colors show what needs to be done",
       body: (
         <>
-          <p>Each task changes color on its own schedule:</p>
+          <p>A task turns yellow when it is almost due and red once it is overdue. A task marked with a red (!) is long overdue.</p>
           <div className="flex flex-col gap-1.5">
             <SampleTask status="ok" name="Oil change" due="Due in 4 months" />
             <SampleTask status="soon" name="Wash the sheets" due="Due in 2 days" />
             <SampleTask status="due" name="Test the smoke detectors" due="Overdue 5 days" />
             <SampleTask status="severe" name="Clean the fridge" due="Overdue 2 months" />
           </div>
-          <p>A folder takes its color from how many things inside it are overdue:</p>
+          <p>A folder turns redder the more overdue tasks it holds:</p>
           <div className="flex flex-col gap-1.5">
             <SampleFolder level="green" name="Car" />
             <SampleFolder level="orange" name="Kitchen" overdue={2} />
+            <SampleFolder level="red" name="Bathroom" overdue={4} />
           </div>
         </>
       ),
@@ -175,13 +179,10 @@ function buildPages({ onDesktop, installed }: { onDesktop: boolean; installed: b
       body: (
         <>
           <p>No account, no ads and no tracking.</p>
+          <p>It works without internet, so you can check things off anywhere.</p>
           <p>
-            It works without internet, like any app on your phone. Open it and check things off anywhere, even with no
-            signal.
-          </p>
-          <p>
-            Your tasks are saved on this device and go nowhere else unless you save a backup file. That also means
-            the backup is the only other copy: save one now and then from Settings.
+            Your tasks are saved only on this device. Now and then, save a backup file from Settings: it is the only
+            other copy.
           </p>
         </>
       ),
@@ -204,10 +205,7 @@ function buildPages({ onDesktop, installed }: { onDesktop: boolean; installed: b
             height={176}
             className="mx-auto rounded-lg bg-white p-2"
           />
-          <p>
-            Your phone and this computer keep separate lists, with no syncing between them. You can keep using it
-            here too.
-          </p>
+          <p>Your phone and this computer keep separate lists that do not sync. You can use it here too.</p>
         </>
       ),
     });
@@ -217,11 +215,11 @@ function buildPages({ onDesktop, installed }: { onDesktop: boolean; installed: b
       body: (
         <>
           <p>
-            Installed, it opens from its own icon like any other app, works without internet, and keeps your tasks
-            safe. In a browser tab, the phone may erase them after a week away.
+            Installed, it opens from its own icon like any other app and keeps your tasks safe. In a browser tab, your
+            phone may erase them if you do not open it for a week.
           </p>
           <InstallSteps />
-          <p>On iPhone and iPad, tasks added in a browser tab do not move into the app, so install first.</p>
+          <p>On iPhone and iPad, tasks added in a browser tab do not carry over to the app, so install it first.</p>
         </>
       ),
     });
