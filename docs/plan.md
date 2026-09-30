@@ -126,7 +126,8 @@ look worse than a room with 3 of 10 overdue.
   titled "Sincewhen".
 - Every item has the same screen (`/rooms?id=…`): a room lists its tasks and sub-rooms, a task
   lists its sub-tasks. Tapping a row opens it; the check circle completes it; the ⋮ button opens
-  the options sheet.
+  the options sheet. A task checked off today keeps a filled green check in its circle until
+  the day ends (`TaskTiming.doneToday`); tapping it again records another completion.
 
 ## Wide screens
 

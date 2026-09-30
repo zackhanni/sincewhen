@@ -65,13 +65,22 @@ function TaskRow({ view, hasChildren, parentPath }: NodeRowProps) {
         isSevere && "border-red-600 bg-red-50 dark:bg-red-950",
       )}
     >
+      {/* Checked off today: the circle stays filled with the green check it flashes on tap.
+          Tapping it again still works and records another completion for today. */}
       <button
         type="button"
-        aria-label={`Mark ${node.name} done`}
+        aria-label={timing.doneToday ? `${node.name} was done today. Mark done again` : `Mark ${node.name} done`}
         onClick={() => completeTask(node.id, node.name)}
         className="flex size-12 shrink-0 items-center justify-center"
       >
-        <span className="flex size-7 items-center justify-center rounded-full border-2 border-muted-foreground/40 text-transparent active:bg-green-500 active:text-white">
+        <span
+          className={cn(
+            "flex size-7 items-center justify-center rounded-full border-2",
+            timing.doneToday
+              ? "border-green-500 bg-green-500 text-white"
+              : "border-muted-foreground/40 text-transparent active:bg-green-500 active:text-white",
+          )}
+        >
           <CheckIcon className="size-4" />
         </span>
       </button>

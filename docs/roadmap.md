@@ -99,6 +99,12 @@ Details and open questions: [landing-page.md](landing-page.md).
 - **Drag to reorder.** The `sortOrder` field is already a fractional-indexing key; only the drag
   UI is missing.
 - **Snooze** a task without completing it.
+- **A hands-on intro** (idea, Zack 2026-09-30, not scheduled). Let people tap the sample rows in
+  the intro, for example checking off a sample task or opening a sample folder on page 4
+  ("Colors show what needs to be done"), or add short looping animations of each step. Samples
+  must not touch real data. Videos would not work offline as things stand: `sw.js` caches only
+  the pages and their `/_next/static/` files, not files in `public/`. Weigh their size against
+  docs/pagespeed-audit.md too.
 - **History view** and frequency suggestions from the completion log.
 - **Less JavaScript on the app screens.** Two options need a decision, with measured costs, in
   docs/pagespeed-audit.md → "Needs a decision": `zod/mini` in `lib/core`, and loading the add /
