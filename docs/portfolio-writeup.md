@@ -20,16 +20,15 @@ design, so any count of users will come from feedback, not a dashboard.
 The site entry is already published (no `draft` flag since 2026-10-05), so these items are about
 the next re-import, not about taking the entry public.
 
-1. **Re-import the entry below into `web-wizard-dev-v2`.** The live entry says "All 9 pull
+1. **Done 2026-10-18 (web-wizard PR #48): re-import the entry below into `web-wizard-dev-v2`.** The live entry says "All 9 pull
    requests went through automated code review" and "every pull request reviewed", but PR #6
    (docs only) was never reviewed, and it says the fixes came "with regression tests", which the
    two storage fixes on PR #8 did not. Its meta description is 117 characters against the
    site's 150-160 rule (web-wizard `docs/seo.md` → S12, roadmap C18). And it doesn't describe
    the "done today" check. The entry below fixes all four.
-2. **Landing-page performance stays out until PageSpeed Insights measures it live.** It was 94
-   to 99 on a local production build (Evidence, not public). The keyless PageSpeed Insights API
-   was out of quota on 2026-10-18; run `scripts/pagespeed/psi.mjs` with the key (median of 3
-   mobile runs on the live `/about`).
+2. **Landing-page performance is measured live** (2026-10-18): PageSpeed Insights scored the
+   live `/about` 99 on mobile, the best of 2 keyed runs (99, 98), and 100 on desktop (2 of 2).
+   The owner publishes the best recorded run (2026-10-18). The local 94 to 99 stays in Evidence.
 3. **The number on the app icon stays out of the copy until a notification prompt exists.** iOS
    shows a home-screen web app's icon number only after the user allows notifications, which the
    app never asks for, and Chrome on Android doesn't show it at all. The owner chose (2026-09-27)
@@ -245,7 +244,7 @@ dashes, arrows or curly quotes.
       "A complete v1 went from first commit to live in one weekend (2026-09-19 to 2026-09-20), with no account to create and no backend to run or pay for.",
       "Accessibility went from 96 to 100 on the screens that show overdue tasks, measured on the live site with tasks loaded, in light and dark mode.",
       "Checked on a real iPhone: the installed app reopens and works in airplane mode, \"Share backup\" opens the share sheet, and a backup file saved to the Files app restores, on the same phone and on a second device.",
-      "The landing page scores 100 for accessibility, best practices and SEO in Lighthouse's mobile test of the live site.",
+      "The landing page scores 100 for accessibility, best practices and SEO in Lighthouse's mobile test of the live site, and Google PageSpeed Insights scores it 99 for mobile performance (best of 2 tests) and 100 on desktop.",
       "147 automated tests cover the scheduling, ranking and completion rules, the saved-data checks and the backup format. The production build was also tested in a headless browser, including opening never-visited screens offline and upgrading between two deployments.",
       "Built for a future sync layer: storage sits behind one swappable interface, and each record maps to one database row.",
       "Every pull request that changed code went through automated code review (8 of the 9; the other changed only docs): 36 findings, 28 fixed, 7 declined and 1 withdrawn by the reviewer.",
@@ -264,8 +263,7 @@ dashes, arrows or curly quotes.
   that says "The write-up still says 142 and 30" (it no longer does). Close roadmap S12/C18 for
   Sincewhen.
 - **No `draft` flag.** The entry has been published since 2026-10-05. The open Before-publishing
-  items (landing-page performance, the number on the app icon, the roadmap ticks) touch nothing
-  in this copy.
+  items (the number on the app icon, the roadmap ticks) touch nothing in this copy.
 - **`description` is 156 characters** (rule: 150-160). It is a variant of the C18 proposal
   ("live 2 days after its first commit", 152): "within 2 days" is closer to the record, since the
   complete v1 went live about 25 hours after the first commit, on its second calendar day.
@@ -429,9 +427,6 @@ These would give the entry more user-facing numbers:
 - **Outside testers**: after the launch post: comments, GitHub issues, and people who say they
   installed it. There are no analytics by design. Vercel's Observability tab gives only
   aggregate request counts, which are not people.
-- **Landing page performance**: PageSpeed Insights on the live `/about`, mobile, median of 3
-  runs (Before publishing 2). The keyless API was out of quota on 2026-10-18; use
-  `scripts/pagespeed/psi.mjs` with the key. A single local run is not reliable for performance.
 
 ## Evidence
 
@@ -445,7 +440,8 @@ These would give the entry more user-facing numbers:
 | Regression tests with the fixes | 7 fixes on PR #1, each replied to as "with a regression test that fails on the old code"; test files also changed in `ec8a918`, `a370351`, `a698c9e`. PR #8's 2 storage fixes (`b4ffb4c`) changed no test file, so the copy no longer says the fixes came with tests | `gh api "repos/zackhanni/sincewhen/pulls/1/comments?per_page=100" --jq '[.[] \| select(.user.login=="zackhanni") \| select(.body\|test("regression test";"i"))] \| length'`; `git show --stat b4ffb4c` | 2026-10-18 |
 | Accessibility with tasks loaded, live site | before: 96 on 3 of 6 screens (2026-09-24, made-up sample tasks, light only; color contrast 4.33:1 and 3.8:1). After: 100 on all 8 screens measured (`/rooms`, `/due`, a room, a task; light and dark), on 2026-09-27 and again on 2026-10-05 after PR #9 changed the task circle (web-wizard `docs/portfolio.md` → Evidence recorded here). Re-run 2026-10-18 on the same deploy: `/due` light and the Kitchen room dark, accessibility 100 and best practices 100 on both. Profiles held the example set (19 items, 13 of them tasks, theme as set); the dark room's final screenshot shows a severely overdue row, and color contrast passed. SEO on app screens is 63 by design: they are `noindex` since PR #8 and `is-crawlable` is the only failing audit, so "SEO 100" is claimed for `/about` only | Lighthouse 12.8.2, mobile, one run per screen (accessibility is not timing-dependent). Copy `scripts/pagespeed/seed-profile.mjs` into a scratch folder whose `node_modules` links to an installed Playwright (the repo has none), run it with `<profile> <light\|dark> https://sincewhen.webwizarddev.com`, then `npx -y lighthouse@12 <url> --only-categories=accessibility,best-practices,seo --disable-storage-reset --chrome-flags="--headless=new --user-data-dir=<profile>"`. Report: `docs/pagespeed-audit.md` | 2026-10-18 |
 | Landing page, live | `/about`: accessibility 100, best practices 100, SEO 100 | `npx -y lighthouse@12 https://sincewhen.webwizarddev.com/about --only-categories=accessibility,best-practices,seo --form-factor=mobile --chrome-flags="--headless=new"`, Lighthouse 12.8.2, one run | 2026-10-18 |
-| Landing page performance (not public) | 94 to 99, largest paint 3.10 to 2.26 s | Local production build of `skill-pass`, Lighthouse mobile, median of 3 then 5 runs (`docs/pagespeed-audit.md`). The keyless PageSpeed Insights API answered HTTP 429 (daily quota) on 2026-10-18; publish only from PageSpeed Insights on the live site | 2026-10-18 |
+| Landing page, PageSpeed Insights (live) | mobile performance 99 = best of 2 runs (99, 98); desktop 100 (2 of 2); accessibility, best practices and SEO 100 on all 4 | `node scripts/pagespeed/psi.mjs --url=https://sincewhen.webwizarddev.com/about --strategy=mobile` (and `desktop`) from the pfthw folder for its key, Lighthouse 13.5.0, 2026-10-18 17:22 UTC. A third mobile call returned the first run from PSI's cache (same `fetchTime`) and is not counted; the third desktop call hit the key's quota. No field data | 2026-10-18 |
+| Landing page performance, local (not public) | 94 to 99, largest paint 3.10 to 2.26 s | Local production build of `skill-pass`, Lighthouse mobile, median of 3 then 5 runs (`docs/pagespeed-audit.md`). Superseded for the copy by the live PageSpeed Insights row | 2026-10-18 |
 | Safari's storage limit | 7 days of Safari use without interaction, then script-written storage is deleted; home-screen web apps are exempt | https://webkit.org/blog/10218/full-third-party-cookie-blocking-and-more/ (2020-03-24), section "7-Day Cap on All Script-Writeable Storage"; `docs/pitfalls.md` § Safari deletes local data | 2026-10-18 |
 | Calendar arithmetic (worked example) | "every 2 months" is `addMonths`, not 60 days | `lib/core/dates.ts` (unchanged since `bb2b6fa`); `lib/core/dates.test.ts` (leap day, daylight-saving change); the air-filter example is `docs/plan.md` § What the app does | 2026-10-18 |
 | Ranking (worked example) | a daily task 2 days late has progress 3.0; a yearly task 2 weeks late has 1.04, so the daily task ranks first | progress = elapsed days / interval days (`lib/core/status.ts`, `docs/plan.md` § Task status): (1 + 2) / 1 and (365 + 14) / 365. PR #9 added only `doneToday` to `getTaskTiming` | 2026-10-18 |
